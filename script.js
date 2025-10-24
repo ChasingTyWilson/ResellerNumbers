@@ -101,17 +101,6 @@ class ResellerNumbersAnalytics {
             });
         }
 
-        // Handle demo mode button
-        const demoModeBtn = document.getElementById('demoModeBtn');
-        console.log('Demo mode button found:', !!demoModeBtn);
-        if (demoModeBtn) {
-            demoModeBtn.addEventListener('click', async () => {
-                console.log('Demo mode button clicked!');
-                await this.handleDemoMode();
-            });
-        } else {
-            console.error('Demo mode button not found!');
-        }
 
         // Mark listeners as setup
         this.authListenersSetup = true;
@@ -269,33 +258,6 @@ class ResellerNumbersAnalytics {
         }
     }
 
-    async handleDemoMode() {
-        console.log('🎮 Starting demo mode...');
-        
-        try {
-            // Create demo user data
-            const mockAuthToken = 'demo_token_' + Date.now();
-            const mockUserData = {
-                email: 'demo@resellernumbers.com',
-                name: 'Demo User',
-                subscriptionStatus: 'trial',
-                trialEndDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
-            };
-
-            // Store in localStorage
-            localStorage.setItem('authToken', mockAuthToken);
-            localStorage.setItem('userData', JSON.stringify(mockUserData));
-
-            console.log('Demo data stored in localStorage');
-            alert('✅ Welcome to Demo Mode! You can explore all features with sample data.');
-            
-            console.log('Calling showApp()...');
-            this.showApp();
-        } catch (error) {
-            console.error('Error in handleDemoMode:', error);
-            alert('❌ Error starting demo mode: ' + error.message);
-        }
-    }
 
     async loadUserData() {
         // Load user data from Supabase if available
@@ -1288,7 +1250,7 @@ class ResellerNumbersAnalytics {
             })();
             
             const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Sync timeout - operation took too long')), 60000); // 60 second timeout
+                setTimeout(() => reject(new Error('Sync timeout - operation took too long')), 15000); // 15 second timeout
             });
             
             result = await Promise.race([syncPromise, timeoutPromise]);
@@ -1333,11 +1295,13 @@ class ResellerNumbersAnalytics {
             console.error('Error syncing to Supabase:', error);
             this.showFileStatus(type, 'warning', `${data.length} items loaded (sync error, using session only)`);
             
-            // Update progress bar to show error
+            // Update progress bar to show error but continue
             if (type === 'inventory') {
                 this.updateInventoryProgress(0, 'Sync error', true);
+                setTimeout(() => this.hideInventoryProgress(), 2000);
             } else if (type === 'sold') {
                 this.updateSoldProgress(0, 'Sync error', true);
+                setTimeout(() => this.hideSoldProgressBar(), 2000);
             }
         }
     }
