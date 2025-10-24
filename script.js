@@ -1098,9 +1098,20 @@ class ResellerNumbersAnalytics {
             return;
         }
 
+        // Show progress bar for sold files
+        if (type === 'sold') {
+            this.showSoldProgressBar();
+            this.updateSoldProgress(10, 'Reading file...');
+        }
+
         try {
             const csvText = await this.readFileAsText(file);
             let data;
+            
+            if (type === 'sold') {
+                this.updateSoldProgress(30, 'Parsing CSV data...');
+            }
+            
             if (type === 'inventory') {
                 data = this.parseInventoryCSV(csvText);
             } else if (type === 'sold') {
@@ -1111,7 +1122,14 @@ class ResellerNumbersAnalytics {
             
             if (data.length === 0) {
                 this.showFileStatus(type, 'error', 'No valid data found in CSV file');
+                if (type === 'sold') {
+                    this.hideSoldProgressBar();
+                }
                 return;
+            }
+
+            if (type === 'sold') {
+                this.updateSoldProgress(60, 'Analyzing data...');
             }
 
             if (type === 'inventory') {
@@ -1141,9 +1159,19 @@ class ResellerNumbersAnalytics {
             if (type === 'unsold' && this.soldData.length > 0) {
                 this.populateStoreSnapshot();
             }
+            
+            // Complete progress for sold files
+            if (type === 'sold') {
+                this.updateSoldProgress(100, 'Complete!');
+                setTimeout(() => this.hideSoldProgressBar(), 2000);
+            }
         } catch (error) {
             console.error('Error processing file:', error);
             this.showFileStatus(type, 'error', `Error processing file: ${error.message}`);
+            if (type === 'sold') {
+                this.updateSoldProgress(0, 'Error processing file', true);
+                setTimeout(() => this.hideSoldProgressBar(), 3000);
+            }
         }
     }
 
