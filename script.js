@@ -132,8 +132,8 @@ class ResellerNumbersAnalytics {
                 } else if (profile && profile.status === 'suspended') {
                     console.log('⚠️ User account is suspended');
                     alert('Your account has been suspended. Please contact support for assistance.');
-                    return;
-                }
+                return;
+            }
             }
         } else {
             console.log('⚠️ Supabase not available, checking demo mode...');
@@ -8355,7 +8355,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Admin Access Functions
 function showAdminAccess() {
-    document.getElementById('adminModal').style.display = 'flex';
+    console.log('showAdminAccess called');
+    const modal = document.getElementById('adminModal');
+    console.log('Modal element:', modal);
+    if (modal) {
+        modal.style.display = 'flex';
+        console.log('Modal should be visible now');
+    } else {
+        console.error('Admin modal not found!');
+    }
 }
 
 function hideAdminAccess() {
@@ -8390,5 +8398,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 checkAdminPassword();
             }
         });
+    }
+    
+    // Test if admin button exists
+    const adminButton = document.querySelector('.btn-admin-link');
+    if (adminButton) {
+        console.log('Admin button found:', adminButton);
+        adminButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Admin button clicked');
+            showAdminAccess();
+        });
+    } else {
+        console.log('Admin button not found');
     }
 });
