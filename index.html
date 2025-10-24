@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reseller Numbers - Professional Analytics Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-service.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">📊</div>
+                    <div class="logo-text">
+                        <h1 class="brand-title">RESELLER NUMBERS</h1>
+                        <div class="brand-subtitle">Professional Analytics Platform</div>
+                    </div>
+                </div>
+                <div class="header-tagline">
+                    <p>Complete business intelligence for resellers - inventory, sales, and performance analytics</p>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Authentication Screen -->
+            <div class="auth-screen" id="authScreen">
+                <div class="auth-container">
+                    <div class="auth-logo">
+                        <h1>📊 eBay Analytics Pro</h1>
+                        <p>Professional business intelligence for serious sellers</p>
+                    </div>
+
+                    <!-- Login Form -->
+                    <div class="auth-form-wrapper" id="loginForm">
+                        <h2>Welcome Back</h2>
+                        <p class="auth-subtitle">Sign in to access your analytics dashboard</p>
+                        
+                        <form id="loginFormElement" class="auth-form">
+                            <div class="form-group">
+                                <label for="loginEmail">Email Address</label>
+                                <input type="email" id="loginEmail" placeholder="you@example.com" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="loginPassword">Password</label>
+                                <input type="password" id="loginPassword" placeholder="••••••••" required>
+                            </div>
+
+                            <div class="form-options">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="rememberMe">
+                                    <span>Remember me</span>
+                                </label>
+                                <a href="#" class="forgot-password">Forgot password?</a>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-large btn-full">
+                                Sign In
+                            </button>
+
+                            <div class="auth-divider">
+                                <span>or</span>
+                            </div>
+
+                            <button type="button" class="btn btn-secondary btn-full" id="showSignupBtn">
+                                Create New Account
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Signup Form -->
+                    <div class="auth-form-wrapper" id="signupForm" style="display: none;">
+                        <h2>Create Account</h2>
+                        <p class="auth-subtitle">Start your 14-day free trial - no credit card required</p>
+                        
+                        <form id="signupFormElement" class="auth-form">
+                            <div class="form-group">
+                                <label for="signupName">Full Name</label>
+                                <input type="text" id="signupName" placeholder="John Doe" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="signupEmail">Email Address</label>
+                                <input type="email" id="signupEmail" placeholder="you@example.com" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="signupPassword">Password</label>
+                                <input type="password" id="signupPassword" placeholder="••••••••" required minlength="8">
+                                <small>At least 8 characters</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="signupPasswordConfirm">Confirm Password</label>
+                                <input type="password" id="signupPasswordConfirm" placeholder="••••••••" required>
+                            </div>
+
+                            <div class="form-options">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="agreeTerms" required>
+                                    <span>I agree to the <a href="#" class="terms-link">Terms of Service</a> and <a href="#" class="terms-link">Privacy Policy</a></span>
+                                </label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-large btn-full">
+                                Create Account
+                            </button>
+
+                            <div class="auth-divider">
+                                <span>or</span>
+                            </div>
+
+                            <button type="button" class="btn btn-secondary btn-full" id="showLoginBtn">
+                                Already have an account? Sign In
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Features List -->
+                    <div class="auth-features">
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Real-time inventory analytics</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Sales performance tracking</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Collection profitability insights</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>Secure cloud data storage</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform Selection Page -->
+            <div class="platform-selector" id="platformSelector" style="display: none;">
+                <div class="platform-selector-container">
+                    <div class="platform-header">
+                        <h1>🚀 Welcome to Business Analytics Suite</h1>
+                        <p class="platform-subtitle">Select a platform to get started</p>
+                        <button class="logout-btn" id="logoutBtn">
+                            <span class="btn-icon">👋</span>
+                            Sign Out
+                        </button>
+                    </div>
+
+                    <div class="platforms-grid">
+                        <!-- eBay Analytics -->
+                        <div class="platform-card" id="ebayAnalyticsCard">
+                            <div class="platform-card-header">
+                                <div class="platform-icon">📊</div>
+                                <h3>eBay Analytics Pro</h3>
+                                <span class="platform-badge active">Active</span>
+                            </div>
+                            <p class="platform-description">
+                                Comprehensive business intelligence for your eBay store. Track inventory, analyze sales performance, and optimize your collections.
+                            </p>
+                            <div class="platform-features">
+                                <div class="feature-item-small">
+                                    <span class="check-icon">✓</span>
+                                    <span>Real-time inventory tracking</span>
+                                </div>
+                                <div class="feature-item-small">
+                                    <span class="check-icon">✓</span>
+                                    <span>Sales performance analytics</span>
+                                </div>
+                                <div class="feature-item-small">
+                                    <span class="check-icon">✓</span>
+                                    <span>Collection profitability insights</span>
+                                </div>
+                                <div class="feature-item-small">
+                                    <span class="check-icon">✓</span>
+                                    <span>Customer retention tracking</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-large btn-full platform-launch-btn">
+                                Launch eBay Analytics
+                            </button>
+                        </div>
+
+                        <!-- Image Optimizer -->
+                        <div class="platform-card" id="imageOptimizerCard">
+                            <div class="platform-card-header">
+                                <div class="platform-icon">✨</div>
+                                <h3>Image Optimizer</h3>
+                                <span class="platform-badge active">Active</span>
+                            </div>
+                            <p class="platform-description">
+                                Professional image tools for eBay sellers. Create collages, add watermarks, optimize, and batch process your product images.
+                            </p>
+                            <div class="platform-features">
+                                <div class="feature-item-small">
+                                    <span class="check-icon">✓</span>
+                                    <span>Collage creator with templates</span>
+                                </div>
+                                <div class="feature-item-small">
+                                    <span class="check-icon">✓</span>
+                                    <span>Custom watermark tool</span>
+                                </div>
+                                <div class="feature-item-small">
+                                    <span class="check-icon">✓</span>
+                                    <span>Auto-crop & optimize</span>
+                                </div>
+                                <div class="feature-item-small">
+                                    <span class="check-icon">✓</span>
+                                    <span>Batch rename & export</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-large btn-full platform-launch-btn">
+                                Launch Image Optimizer
+                            </button>
+                        </div>
+
+                        <!-- WhatNot / Live Selling Analytics -->
+                        <div class="platform-card platform-card-coming-soon">
+                            <div class="platform-card-header">
+                                <div class="platform-icon">🎥</div>
+                                <h3>WhatNot / Live Selling Analytics</h3>
+                                <span class="platform-badge coming-soon">Coming Soon</span>
+                            </div>
+                            <p class="platform-description">
+                                Real-time analytics for live sellers on WhatNot, Whatnot, and other streaming platforms. Track viewer engagement, sales velocity, and stream performance.
+                            </p>
+                            <div class="platform-features">
+                                <div class="feature-item-small disabled">
+                                    <span class="check-icon">✓</span>
+                                    <span>Live stream performance metrics</span>
+                                </div>
+                                <div class="feature-item-small disabled">
+                                    <span class="check-icon">✓</span>
+                                    <span>Viewer engagement tracking</span>
+                                </div>
+                                <div class="feature-item-small disabled">
+                                    <span class="check-icon">✓</span>
+                                    <span>Sales velocity analysis</span>
+                                </div>
+                                <div class="feature-item-small disabled">
+                                    <span class="check-icon">✓</span>
+                                    <span>Top buyers & repeat customers</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline btn-large btn-full" disabled>
+                                Coming Soon
+                            </button>
+                        </div>
+
+                        <!-- Multi-Platform Dashboard -->
+                        <div class="platform-card platform-card-coming-soon">
+                            <div class="platform-card-header">
+                                <div class="platform-icon">💎</div>
+                                <h3>Multi-Platform Dashboard</h3>
+                                <span class="platform-badge coming-soon">Coming Soon</span>
+                            </div>
+                            <p class="platform-description">
+                                Unified view of all your selling channels. Compare eBay, WhatNot, Amazon, and more in one powerful dashboard.
+                            </p>
+                            <div class="platform-features">
+                                <div class="feature-item-small disabled">
+                                    <span class="check-icon">✓</span>
+                                    <span>Cross-platform analytics</span>
+                                </div>
+                                <div class="feature-item-small disabled">
+                                    <span class="check-icon">✓</span>
+                                    <span>Unified revenue tracking</span>
+                                </div>
+                                <div class="feature-item-small disabled">
+                                    <span class="check-icon">✓</span>
+                                    <span>Consolidated reporting</span>
+                                </div>
+                                <div class="feature-item-small disabled">
+                                    <span class="check-icon">✓</span>
+                                    <span>Customer lifetime value</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline btn-large btn-full" disabled>
+                                Coming Soon
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- User Info Footer -->
+                    <div class="platform-footer">
+                        <div class="user-info">
+                            <span class="user-icon">👤</span>
+                            <span id="userEmailDisplay">user@example.com</span>
+                        </div>
+                        <div class="platform-footer-links">
+                            <a href="#" class="footer-link">Support</a>
+                            <span class="footer-separator">•</span>
+                            <a href="#" class="footer-link">Documentation</a>
+                            <span class="footer-separator">•</span>
+                            <a href="#" class="footer-link">Settings</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Landing Page -->
+            <div class="landing-page" id="landingPage" style="display: none;">
+                <div class="welcome-section">
+                    <p>Upload your eBay data to get comprehensive insights into your inventory performance, sales analytics, and collection optimization.</p>
+                    <p style="font-size: 0.9rem; color: white; margin-top: 0.5rem; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">
+                        💡 <strong>Note:</strong> CSV data is analyzed in memory each session. Your collection purchase data and business settings are saved permanently.
+                    </p>
+                </div>
+
+                <!-- Unified Upload Section -->
+                <div class="unified-upload-section">
+                    <div class="upload-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-header">
+                                <h3>📁 Current Inventory</h3>
+                                <button class="btn btn-help" id="showCsvHelp">
+                                    <span class="help-icon">❓</span>
+                                    How to Download Reports
+                                </button>
+                            </div>
+                            <p>Upload your current eBay listings CSV</p>
+                            <div class="upload-area" id="inventoryUploadArea">
+                                <div class="upload-content">
+                                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7,10 12,15 17,10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    <h4>Drop inventory CSV here</h4>
+                                    <p>or <span class="upload-link">browse files</span></p>
+                                </div>
+                                <input type="file" id="inventoryFileInput" accept=".csv" style="display: none;">
+                            </div>
+                            <div class="file-status" id="inventoryFileStatus"></div>
+                        </div>
+                    </div>
+
+                    <div class="upload-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>📈 Sold Orders</h3>
+                            <p>Upload your paid & shipped orders CSV</p>
+                            <div class="upload-area" id="soldUploadArea">
+                                <div class="upload-content">
+                                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7,10 12,15 17,10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    <h4>Drop sold orders CSV here</h4>
+                                    <p>or <span class="upload-link">browse files</span></p>
+                                </div>
+                                <input type="file" id="soldFileInput" accept=".csv" style="display: none;">
+                            </div>
+                            <div class="file-status" id="soldFileStatus"></div>
+                        </div>
+                    </div>
+
+                    <div class="upload-actions">
+                        <button class="btn btn-primary btn-large" id="analyzeBtn" disabled>
+                            <span class="btn-icon">🚀</span>
+                            Generate Business Analytics
+                        </button>
+                        <div class="sample-data-section">
+                            <p>Don't have CSV files? Try with sample data:</p>
+                            <button class="btn btn-secondary" id="loadSampleDataBtn">Load Sample Data</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CSV Upload Help Modal -->
+            <div class="modal" id="csvHelpModal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>📊 How to Download Your eBay Reports</h2>
+                        <button class="modal-close" id="closeCsvHelp">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="help-section">
+                            <p class="help-intro">Trying to find the right report? Here's exactly what you need to do.</p>
+                            
+                            <div class="help-link">
+                                <p><strong>Head to your eBay Reports page:</strong></p>
+                                <a href="https://www.ebay.com/sh/reports/downloads" target="_blank" class="ebay-link">
+                                    🔗 https://www.ebay.com/sh/reports/downloads
+                                </a>
+                            </div>
+
+                            <div class="report-instructions">
+                                <div class="report-type">
+                                    <h3>📈 To download your ORDERS from this year:</h3>
+                                    <ol class="steps-list">
+                                        <li>Click <strong>"Download Report"</strong></li>
+                                        <li>Select <strong>Report Source</strong> → <strong>Orders</strong></li>
+                                        <li>Select <strong>Report Type</strong> → <strong>Paid and Shipped</strong></li>
+                                        <li>Select <strong>Date Range</strong> → <strong>This Year</strong></li>
+                                    </ol>
+                                </div>
+
+                                <div class="report-type">
+                                    <h3>📦 To download your CURRENT ACTIVE LISTINGS:</h3>
+                                    <ol class="steps-list">
+                                        <li>Click <strong>"Download Report"</strong></li>
+                                        <li>Select <strong>Report Source</strong> → <strong>Listings</strong></li>
+                                        <li>Select <strong>Report Type</strong> → <strong>All Active Listings</strong></li>
+                                    </ol>
+                                </div>
+                            </div>
+
+                            <div class="help-tips">
+                                <h4>💡 Pro Tips:</h4>
+                                <ul class="tips-list">
+                                    <li>Make sure to download <strong>CSV format</strong> (not Excel)</li>
+                                    <li>Orders report gives you sales analytics and performance data</li>
+                                    <li>Listings report gives you current inventory and pricing data</li>
+                                    <li>Both reports are needed for complete analytics</li>
+                                </ul>
+                            </div>
+
+                            <div class="help-footer">
+                                <button class="btn btn-primary" id="closeCsvHelpBtn">Got it, thanks!</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Optimizer Tool -->
+            <div class="image-optimizer" id="imageOptimizer" style="display: none;">
+                <!-- Step 1: Upload -->
+                <div class="optimizer-step" id="optimizerUploadStep">
+                    <div class="optimizer-header">
+                        <button class="btn btn-secondary optimizer-back-btn" id="backToPlatformFromOptimizer">
+                            ← Back to Platforms
+                        </button>
+                        <h2>✨ Image Optimizer</h2>
+                        <p>Professional image tools for eBay sellers</p>
+                    </div>
+
+                    <div class="optimizer-upload-container">
+                        <div class="optimizer-intro">
+                            <h3>📸 Upload Your Product Images</h3>
+                            <p>Upload your scanned images, product photos, or any images you want to optimize for eBay listings.</p>
+                            <p class="intro-note">On the next screen, you'll be able to create collages, add watermarks, crop, resize, and more!</p>
+                        </div>
+
+                        <div class="optimizer-upload-zone" id="optimizerUploadZone">
+                            <div class="upload-zone-content">
+                                <svg class="upload-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <h4>Drop images here</h4>
+                                <p>or <span class="upload-zone-link">browse files</span></p>
+                                <p class="upload-zone-hint">Supports: JPG, PNG, WEBP • Multiple files accepted</p>
+                            </div>
+                            <input type="file" id="optimizerFileInput" accept="image/*" multiple style="display: none;">
+                        </div>
+
+                        <div class="optimizer-file-list" id="optimizerFileList"></div>
+
+                        <div class="optimizer-upload-actions">
+                            <button class="btn btn-primary btn-large" id="proceedToOptionsBtn" disabled>
+                                Continue to Processing Options →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Processing Options -->
+                <div class="optimizer-step" id="optimizerOptionsStep" style="display: none;">
+                    <div class="optimizer-header">
+                        <button class="btn btn-secondary optimizer-back-btn" id="backToUploadBtn">
+                            ← Back to Upload
+                        </button>
+                        <h2>⚙️ Choose Processing Options</h2>
+                        <p><span id="imageCount">0</span> images loaded • Select what you'd like to do</p>
+                    </div>
+
+                    <div class="optimizer-options-container">
+                        <!-- Option 1: Create Collage -->
+                        <div class="optimizer-option-card">
+                            <input type="checkbox" id="optionCollage" class="option-checkbox">
+                            <label for="optionCollage" class="option-card-label">
+                                <div class="option-card-header">
+                                    <div class="option-icon">🎨</div>
+                                    <h3>Create Collage</h3>
+                                </div>
+                                <p>Combine multiple images into a single collage perfect for eBay listings</p>
+                            </label>
+                            <div class="option-settings" id="collageSettings" style="display: none;">
+                                <div class="setting-row">
+                                    <label>Rows:</label>
+                                    <input type="number" id="collageRows" value="2" min="1" max="10" class="setting-input-small">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Columns:</label>
+                                    <input type="number" id="collageCols" value="2" min="1" max="10" class="setting-input-small">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Spacing (px):</label>
+                                    <input type="number" id="collageSpacing" value="10" min="0" max="50" class="setting-input-small">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Background:</label>
+                                    <select id="collageBackground" class="setting-select">
+                                        <option value="white">White</option>
+                                        <option value="black">Black</option>
+                                        <option value="transparent">Transparent</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Option 2: Add Watermark -->
+                        <div class="optimizer-option-card">
+                            <input type="checkbox" id="optionWatermark" class="option-checkbox">
+                            <label for="optionWatermark" class="option-card-label">
+                                <div class="option-card-header">
+                                    <div class="option-icon">💧</div>
+                                    <h3>Add Watermark</h3>
+                                </div>
+                                <p>Protect your images with your business logo or watermark</p>
+                            </label>
+                            <div class="option-settings" id="watermarkSettings" style="display: none;">
+                                <div class="setting-row">
+                                    <label>Upload Logo (PNG):</label>
+                                    <input type="file" id="watermarkFile" accept="image/png,image/svg+xml" class="setting-file">
+                                    <div id="watermarkPreview" class="watermark-preview"></div>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Position:</label>
+                                    <select id="watermarkPosition" class="setting-select">
+                                        <option value="bottom-right">Bottom Right</option>
+                                        <option value="bottom-center">Bottom Center</option>
+                                        <option value="bottom-left">Bottom Left</option>
+                                        <option value="top-right">Top Right</option>
+                                        <option value="top-center">Top Center</option>
+                                        <option value="top-left">Top Left</option>
+                                        <option value="center">Center (Overlay)</option>
+                                    </select>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Opacity:</label>
+                                    <input type="range" id="watermarkOpacity" min="10" max="100" value="80" class="setting-slider">
+                                    <span id="watermarkOpacityValue">80%</span>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Size (% of image):</label>
+                                    <input type="range" id="watermarkSize" min="5" max="50" value="20" class="setting-slider">
+                                    <span id="watermarkSizeValue">20%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Option 3: Auto-Crop & Clean -->
+                        <div class="optimizer-option-card">
+                            <input type="checkbox" id="optionCrop" class="option-checkbox">
+                            <label for="optionCrop" class="option-card-label">
+                                <div class="option-card-header">
+                                    <div class="option-icon">✂️</div>
+                                    <h3>Auto-Crop & Clean</h3>
+                                </div>
+                                <p>Remove backgrounds, straighten images, and add consistent borders</p>
+                            </label>
+                            <div class="option-settings" id="cropSettings" style="display: none;">
+                                <div class="setting-row">
+                                    <label>
+                                        <input type="checkbox" id="cropRemoveBackground" checked>
+                                        Remove background (make white)
+                                    </label>
+                                </div>
+                                <div class="setting-row">
+                                    <label>
+                                        <input type="checkbox" id="cropStraighten" checked>
+                                        Auto-straighten images
+                                    </label>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Border size (px):</label>
+                                    <input type="number" id="cropBorder" value="20" min="0" max="100" class="setting-input-small">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Option 4: Resize & Optimize -->
+                        <div class="optimizer-option-card">
+                            <input type="checkbox" id="optionResize" class="option-checkbox">
+                            <label for="optionResize" class="option-card-label">
+                                <div class="option-card-header">
+                                    <div class="option-icon">📐</div>
+                                    <h3>Resize & Optimize</h3>
+                                </div>
+                                <p>Optimize for eBay's recommended size and compress for faster loading</p>
+                            </label>
+                            <div class="option-settings" id="resizeSettings" style="display: none;">
+                                <div class="setting-row">
+                                    <label>Target Size:</label>
+                                    <select id="resizeTarget" class="setting-select">
+                                        <option value="1600">1600x1600px (eBay Recommended)</option>
+                                        <option value="1200">1200x1200px</option>
+                                        <option value="800">800x800px</option>
+                                        <option value="custom">Custom Size</option>
+                                    </select>
+                                </div>
+                                <div class="setting-row" id="customSizeRow" style="display: none;">
+                                    <label>Width:</label>
+                                    <input type="number" id="resizeWidth" value="1600" min="100" max="5000" class="setting-input-small">
+                                    <label>Height:</label>
+                                    <input type="number" id="resizeHeight" value="1600" min="100" max="5000" class="setting-input-small">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Quality:</label>
+                                    <input type="range" id="resizeQuality" min="60" max="100" value="90" class="setting-slider">
+                                    <span id="resizeQualityValue">90%</span>
+                                </div>
+                                <div class="setting-row">
+                                    <label>
+                                        <input type="checkbox" id="resizeMaintainRatio" checked>
+                                        Maintain aspect ratio
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Option 5: Bulk Rename -->
+                        <div class="optimizer-option-card">
+                            <input type="checkbox" id="optionRename" class="option-checkbox">
+                            <label for="optionRename" class="option-card-label">
+                                <div class="option-card-header">
+                                    <div class="option-icon">📝</div>
+                                    <h3>Bulk Rename</h3>
+                                </div>
+                                <p>Automatically rename files with custom patterns and numbering</p>
+                            </label>
+                            <div class="option-settings" id="renameSettings" style="display: none;">
+                                <div class="setting-row">
+                                    <label>Naming Pattern:</label>
+                                    <input type="text" id="renamePattern" value="product" placeholder="e.g., product, item, photo" class="setting-input">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Starting Number:</label>
+                                    <input type="number" id="renameStart" value="1" min="1" class="setting-input-small">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Number Padding:</label>
+                                    <select id="renamePadding" class="setting-select">
+                                        <option value="3">001, 002, 003...</option>
+                                        <option value="2">01, 02, 03...</option>
+                                        <option value="1">1, 2, 3...</option>
+                                        <option value="4">0001, 0002, 0003...</option>
+                                    </select>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Preview:</label>
+                                    <span id="renamePreview" class="rename-preview">product-001.jpg</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Option 6: Quality Enhancement -->
+                        <div class="optimizer-option-card">
+                            <input type="checkbox" id="optionEnhance" class="option-checkbox">
+                            <label for="optionEnhance" class="option-card-label">
+                                <div class="option-card-header">
+                                    <div class="option-icon">✨</div>
+                                    <h3>Enhance Quality</h3>
+                                </div>
+                                <p>Auto-adjust brightness, contrast, and sharpness for better images</p>
+                            </label>
+                            <div class="option-settings" id="enhanceSettings" style="display: none;">
+                                <div class="setting-row">
+                                    <label>
+                                        <input type="checkbox" id="enhanceAuto" checked>
+                                        Auto brightness & contrast
+                                    </label>
+                                </div>
+                                <div class="setting-row">
+                                    <label>
+                                        <input type="checkbox" id="enhanceSharpen" checked>
+                                        Sharpen images
+                                    </label>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Sharpen Amount:</label>
+                                    <input type="range" id="enhanceSharpenAmount" min="0" max="100" value="50" class="setting-slider">
+                                    <span id="enhanceSharpenValue">50%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="optimizer-options-actions">
+                        <button class="btn btn-secondary btn-large" id="backToUploadBtn2">
+                            ← Back
+                        </button>
+                        <button class="btn btn-primary btn-large" id="processImagesBtn">
+                            Process Images →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Processing -->
+                <div class="optimizer-step" id="optimizerProcessingStep" style="display: none;">
+                    <div class="optimizer-header">
+                        <h2>⏳ Processing Your Images</h2>
+                        <p>Please wait while we optimize your images...</p>
+                    </div>
+
+                    <div class="optimizer-processing-container">
+                        <div class="processing-progress">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" id="processingProgressBar"></div>
+                            </div>
+                            <p class="progress-text" id="processingProgressText">Initializing...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Preview & Download -->
+                <div class="optimizer-step" id="optimizerPreviewStep" style="display: none;">
+                    <div class="optimizer-header">
+                        <button class="btn btn-secondary optimizer-back-btn" id="backToOptionsBtn">
+                            ← Back to Options
+                        </button>
+                        <h2>✅ Preview & Download</h2>
+                        <p><span id="processedImageCount">0</span> images processed successfully</p>
+                    </div>
+
+                    <div class="optimizer-preview-container">
+                        <div class="preview-actions-top">
+                            <button class="btn btn-primary btn-large" id="downloadAllBtn">
+                                <span class="btn-icon">💾</span>
+                                Download All as ZIP
+                            </button>
+                            <button class="btn btn-secondary" id="startOverBtn">
+                                🔄 Start Over
+                            </button>
+                        </div>
+
+                        <div class="optimizer-preview-grid" id="optimizerPreviewGrid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Executive Dashboard -->
+            <div class="executive-dashboard" id="executiveDashboard" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>📊 Executive Dashboard</h2>
+                    <p>Current state metrics and business performance overview</p>
+                </div>
+
+                <!-- Executive Dashboard Tabs -->
+                <div class="exec-tabs">
+                    <button class="exec-tab-btn active" data-tab="overview">Overview</button>
+                    <button class="exec-tab-btn" data-tab="annual-review">Monthly Breakdowns</button>
+                    <button class="exec-tab-btn" data-tab="secret-analysis">🔍 Advanced Analytics</button>
+                </div>
+
+                <!-- Overview Tab Content -->
+                <div class="exec-tab-content active" id="overview-tab">
+                    
+                    <!-- Sales Results Section -->
+                    <div class="results-bucket">
+                        <div class="bucket-header">
+                            <h3>💰 SALES RESULTS</h3>
+                            <p>What you've achieved</p>
+                        </div>
+                        <div class="bucket-metrics">
+                            <div class="bucket-metric-card success">
+                                <div class="metric-icon-large">📈</div>
+                                <div class="metric-label">Total Revenue</div>
+                                <div class="metric-value-xl" id="execTotalRevenue">$0</div>
+                                <div class="metric-subtext">All-time sales</div>
+                            </div>
+                            <div class="bucket-metric-card info">
+                                <div class="metric-icon-large">🎯</div>
+                                <div class="metric-label">Unique Collections</div>
+                                <div class="metric-value-xl" id="execCollections">0</div>
+                                <div class="metric-subtext">Collections with 5+ sales</div>
+                            </div>
+                            <div class="bucket-metric-card primary">
+                                <div class="metric-icon-large">📦</div>
+                                <div class="metric-label">Total Items Sold</div>
+                                <div class="metric-value-xl" id="execTotalSales">0</div>
+                                <div class="metric-subtext">Successful orders</div>
+                            </div>
+                            <div class="bucket-metric-card warning">
+                                <div class="metric-icon-large">🚀</div>
+                                <div class="metric-label">Calendar Year Run Rate</div>
+                                <div class="metric-value-xl" id="execAnnualRunRate">$0</div>
+                                <div class="metric-subtext">Projected year-end total</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Future Results Section (Hidden if no inventory) -->
+                    <div class="results-bucket" id="futureResultsBucket" style="display: none;">
+                        <div class="bucket-header">
+                            <h3>🔮 FUTURE RESULTS</h3>
+                            <p>What you have working for you</p>
+                        </div>
+                        <div class="bucket-metrics">
+                            <div class="bucket-metric-card future">
+                                <div class="metric-icon-large">💎</div>
+                                <div class="metric-label">Total Inventory</div>
+                                <div class="metric-value-xl" id="execTotalValue">$0</div>
+                                <div class="metric-subtext">Potential revenue</div>
+                            </div>
+                            <div class="bucket-metric-card future">
+                                <div class="metric-icon-large">📋</div>
+                                <div class="metric-label">Active Listings</div>
+                                <div class="metric-value-xl" id="execActiveListings">0</div>
+                                <div class="metric-subtext">Items for sale</div>
+                            </div>
+                            <div class="bucket-metric-card future">
+                                <div class="metric-icon-large">⏰</div>
+                                <div class="metric-label">Average Days Listed</div>
+                                <div class="metric-value-xl" id="execAvgDaysListed">0</div>
+                                <div class="metric-subtext">Time on market</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Weekly Revenue Chart with Projection -->
+                    <div class="revenue-projection-section">
+                        <div class="section-header">
+                            <h3>📊 Weekly Revenue & Year-End Projection</h3>
+                            <p>Historical performance with projected calendar year-end revenue</p>
+                        </div>
+                        <div class="revenue-chart-wrapper">
+                            <canvas id="weeklyRevenueProjectionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Navigation (Reorganized) -->
+                    <div class="dashboard-navigation-new">
+                        <div class="section-header">
+                            <h3>🗺️ Explore Your Dashboards</h3>
+                            <p>Dive deeper into specific areas of your business</p>
+                        </div>
+
+                        <div class="nav-grid">
+                            <!-- Sales Performance -->
+                            <div class="nav-category">
+                                <div class="nav-category-header">
+                                    <div class="nav-category-icon">📈</div>
+                                    <h4>Sales Performance</h4>
+                                </div>
+                                <div class="nav-category-buttons">
+                                    <button class="btn-nav" id="viewSalesBtn">
+                                        <span class="nav-btn-icon">💵</span>
+                                        <span class="nav-btn-text">Sales Analytics</span>
+                                        <span class="nav-btn-arrow">→</span>
+                                    </button>
+                                    <button class="btn-nav" id="viewCollectionsBtn">
+                                        <span class="nav-btn-icon">🎯</span>
+                                        <span class="nav-btn-text">Collection Performance</span>
+                                        <span class="nav-btn-arrow">→</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Future Performance -->
+                            <div class="nav-category">
+                                <div class="nav-category-header">
+                                    <div class="nav-category-icon">🔮</div>
+                                    <h4>Future Performance</h4>
+                                </div>
+                                <div class="nav-category-buttons">
+                                    <button class="btn-nav" id="viewInventoryBtn">
+                                        <span class="nav-btn-icon">📦</span>
+                                        <span class="nav-btn-text">Inventory Analytics</span>
+                                        <span class="nav-btn-arrow">→</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Settings -->
+                            <div class="nav-category">
+                                <div class="nav-category-header">
+                                    <div class="nav-category-icon">⚙️</div>
+                                    <h4>Settings</h4>
+                                </div>
+                                <div class="nav-category-buttons">
+                                    <button class="btn-nav" id="manageCollectionsBtn">
+                                        <span class="nav-btn-icon">📝</span>
+                                        <span class="nav-btn-text">Manage Collections</span>
+                                        <span class="nav-btn-arrow">→</span>
+                                    </button>
+                                    <button class="btn-nav" id="businessSettingsBtn">
+                                        <span class="nav-btn-icon">💼</span>
+                                        <span class="nav-btn-text">Business Settings</span>
+                                        <span class="nav-btn-arrow">→</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Clear Data Button (Separate) -->
+                        <div class="danger-zone">
+                            <button class="btn btn-outline" id="clearDataBtn" style="border-color: #ef4444; color: #ef4444;">
+                                <span class="btn-icon">🗑️</span>
+                                Clear CSV Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- End Overview Tab -->
+
+                <!-- Current Business Insight Tab -->
+                <div class="exec-tab-content" id="annual-review-tab">
+                    <!-- Main Annual Review View -->
+                    <div id="annualReviewMain">
+                        <div class="annual-review-header">
+                            <h3>📅 Current Business Insight</h3>
+                            <p style="color: #6b7280; margin-top: 0.5rem;">Real-time performance tracking and historical analysis</p>
+                        </div>
+
+                        <!-- Current Month Snapshot -->
+                        <div class="current-month-snapshot">
+                            <div class="month-snapshot-header">
+                                <div>
+                                    <h4>📊 Current Month Snapshot</h4>
+                                    <div class="month-snapshot-subtitle">
+                                        <span id="currentMonthDate">-</span>
+                                        <span class="month-separator">•</span>
+                                        <span id="daysRemainingText">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="month-snapshot-grid">
+                                <div class="month-metric-card">
+                                    <span class="metric-label">Total Sales</span>
+                                    <span class="metric-value-large" id="currentMonthSales">$0</span>
+                                    <span class="metric-subtext" id="currentMonthRanking">-</span>
+                                </div>
+                                <div class="month-metric-card">
+                                    <span class="metric-label">Items Sold</span>
+                                    <span class="metric-value-large" id="currentMonthItemsSold">0</span>
+                                    <span class="metric-subtext" id="currentMonthItemsSubtext">-</span>
+                                </div>
+                                <div class="month-metric-card">
+                                    <span class="metric-label">Run Rate</span>
+                                    <span class="metric-value-large" id="currentMonthRunRate">$0</span>
+                                    <span class="metric-subtext" id="runRateRanking">-</span>
+                                </div>
+                                <div class="month-metric-card">
+                                    <span class="metric-label">Avg Sale Price</span>
+                                    <span class="metric-value-large" id="currentMonthAvgPrice">$0</span>
+                                    <span class="metric-subtext" id="avgPriceRanking">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Monthly Analysis Section -->
+                        <div class="monthly-analysis-section">
+                            <h4 style="color: #1f2937; margin-bottom: 1.5rem;">Monthly Performance</h4>
+                            <div class="months-grid" id="monthsGrid">
+                                <!-- Month boxes will be dynamically generated -->
+                            </div>
+                        </div>
+
+                        <!-- Weekly Analysis Section -->
+                        <div class="weekly-analysis-section">
+                            <h4 style="color: #1f2937; margin-bottom: 1.5rem;">Weekly Performance</h4>
+                            <div class="weekly-chart-container">
+                                <canvas id="weeklyBarChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- eBay Store Snapshot Section (moved to bottom) -->
+                        <div class="store-snapshot-container" style="margin-top: 2rem;">
+                            <div class="store-snapshot-box">
+                                <div class="store-snapshot-header">
+                                    <div>
+                                        <h4>🏪 eBay Store Snapshot</h4>
+                                        <p style="color: #6b7280; font-size: 0.875rem; margin-top: 0.5rem;">Quick listing performance metrics</p>
+                                    </div>
+                                    <div class="unsold-upload-section">
+                                        <label for="unsoldFileInput" class="unsold-upload-btn">
+                                            <span class="upload-icon">📤</span>
+                                            Upload Unsold Report
+                                        </label>
+                                        <input type="file" id="unsoldFileInput" accept=".csv" style="display: none;">
+                                        <div id="unsoldFileStatus" class="file-status"></div>
+                                        <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem; text-align: right;">
+                                            For accurate sell-through rates
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="store-snapshot-metrics">
+                                    <div class="store-metric">
+                                        <div class="store-metric-icon">📊</div>
+                                        <div class="store-metric-content">
+                                            <span class="store-metric-label">Sell Through Rate</span>
+                                            <span class="store-metric-sublabel">(Trailing 30 Days)</span>
+                                            <span class="store-metric-value" id="sellThroughRate30">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="store-metric">
+                                        <div class="store-metric-icon">📈</div>
+                                        <div class="store-metric-content">
+                                            <span class="store-metric-label">Avg Sell Through Rate</span>
+                                            <span class="store-metric-sublabel">(Previous 3 Months)</span>
+                                            <span class="store-metric-value" id="avgSellThroughRate">0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; text-align: center; font-size: 0.875rem; color: #6b7280;">
+                                    <p><strong>✓</strong> = Calculated with Unsold Report (accurate) • <strong>*</strong> = Estimated using current inventory (approximation)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Detail View (hidden by default) -->
+                    <div id="monthlyDetailView" style="display: none;">
+                        <div class="detail-header">
+                            <button class="btn btn-secondary" id="backToAnnualBtn">← Back to Annual Review</button>
+                            <h3 id="monthlyDetailTitle">Month Details</h3>
+                        </div>
+
+                        <!-- Monthly Summary Cards -->
+                        <div class="summary-cards" style="margin-bottom: 2rem;">
+                            <div class="card">
+                                <h3>Total Sales</h3>
+                                <span class="card-icon">💰</span>
+                                <div class="card-value" id="monthlyTotalSales">$0</div>
+                            </div>
+                            <div class="card">
+                                <h3>Items Sold</h3>
+                                <span class="card-icon">📦</span>
+                                <div class="card-value" id="monthlyItemsSold">0</div>
+                            </div>
+                            <div class="card">
+                                <h3>Avg Daily Sales</h3>
+                                <span class="card-icon">📊</span>
+                                <div class="card-value" id="monthlyAvgDaily">$0</div>
+                            </div>
+                            <div class="card">
+                                <h3>Best Day</h3>
+                                <span class="card-icon">⭐</span>
+                                <div class="card-value" id="monthlyBestDay">-</div>
+                            </div>
+                        </div>
+
+                        <!-- Daily Sales Chart -->
+                        <div class="chart-container" style="margin-bottom: 2rem;">
+                            <h3>Daily Sales Timeline</h3>
+                            <canvas id="monthlyDailyChart"></canvas>
+                        </div>
+
+                        <!-- Top 50 Items -->
+                        <div class="top-items-section">
+                            <h3 style="color: #1f2937; margin-bottom: 1rem;">Top 50 Items Sold</h3>
+                            <div class="top-items-table-wrapper" style="max-height: 600px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px;">
+                                <table class="sales-table" id="monthlyTopItemsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Item Title</th>
+                                            <th>Sale Price</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="monthlyTopItemsBody">
+                                        <!-- Top items will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Weekly Detail View (hidden by default) -->
+                    <div id="weeklyDetailView" style="display: none;">
+                        <div class="detail-header">
+                            <button class="btn btn-secondary" id="backToAnnualFromWeekBtn">← Back to Annual Review</button>
+                            <h3 id="weeklyDetailTitle">Week Details</h3>
+                        </div>
+
+                        <!-- Weekly Summary Cards -->
+                        <div class="summary-cards" style="margin-bottom: 2rem;">
+                            <div class="card">
+                                <h3>Total Sales</h3>
+                                <span class="card-icon">💰</span>
+                                <div class="card-value" id="weeklyTotalSales">$0</div>
+                            </div>
+                            <div class="card">
+                                <h3>Items Sold</h3>
+                                <span class="card-icon">📦</span>
+                                <div class="card-value" id="weeklyItemsSold">0</div>
+                            </div>
+                            <div class="card">
+                                <h3>Avg Daily Sales</h3>
+                                <span class="card-icon">📊</span>
+                                <div class="card-value" id="weeklyAvgDaily">$0</div>
+                            </div>
+                            <div class="card">
+                                <h3>Best Day</h3>
+                                <span class="card-icon">⭐</span>
+                                <div class="card-value" id="weeklyBestDay">-</div>
+                            </div>
+                        </div>
+
+                        <!-- Daily Sales Chart -->
+                        <div class="chart-container" style="margin-bottom: 2rem;">
+                            <h3>Daily Sales Timeline</h3>
+                            <canvas id="weeklyDailyChart"></canvas>
+                        </div>
+
+                        <!-- All Items for the Week -->
+                        <div class="top-items-section">
+                            <h3 style="color: #1f2937; margin-bottom: 1rem;">All Items Sold This Week</h3>
+                            <div class="top-items-table-wrapper" style="max-height: 600px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px;">
+                                <table class="sales-table" id="weeklyItemsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Item Title</th>
+                                            <th>Sale Price</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="weeklyItemsBody">
+                                        <!-- Items will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End Annual Business Review Tab -->
+
+                <!-- Secret Analysis Tab -->
+                <div class="exec-tab-content" id="secret-analysis-tab">
+                    <div class="secret-analysis-header">
+                        <h3>🔍 Secret Analysis - Deep Data Insights</h3>
+                        <p style="color: #6b7280; margin-top: 0.5rem;">Discover hidden patterns in your sales data</p>
+                    </div>
+
+                    <!-- Day of Week Analysis -->
+                    <div class="secret-section">
+                        <h4 style="color: #1f2937; margin-bottom: 1.5rem;">📅 Best Days to Sell</h4>
+                        <div class="days-of-week-grid" id="daysOfWeekGrid">
+                            <!-- Day boxes will be dynamically generated -->
+                        </div>
+                    </div>
+
+                    <!-- Top Keywords Analysis -->
+                    <div class="secret-section">
+                        <h4 style="color: #1f2937; margin-bottom: 1.5rem;">🔤 Top 20 Revenue-Generating Keywords</h4>
+                        <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.875rem;">Words in your item titles that drive the most revenue</p>
+                        <div class="keywords-container" id="keywordsContainer">
+                            <!-- Keywords will be dynamically generated -->
+                        </div>
+                    </div>
+
+                    <!-- US State Map Analysis -->
+                    <div class="secret-section">
+                        <h4 style="color: #1f2937; margin-bottom: 1.5rem;">🗺️ Sales by State</h4>
+                        <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.875rem;">Geographic distribution of your customer base</p>
+                        <div class="state-map-container">
+                            <div class="usa-map-wrapper">
+                                <svg id="usaMap" viewBox="0 0 960 600" style="width: 100%; height: auto;">
+                                    <!-- US Map will be dynamically generated with color-coded states -->
+                                </svg>
+                                <div class="map-legend">
+                                    <div class="legend-title">Revenue</div>
+                                    <div class="legend-scale">
+                                        <div class="legend-item"><span class="legend-color" style="background: #ef4444;"></span> Low</div>
+                                        <div class="legend-item"><span class="legend-color" style="background: #fb923c;"></span></div>
+                                        <div class="legend-item"><span class="legend-color" style="background: #fbbf24;"></span></div>
+                                        <div class="legend-item"><span class="legend-color" style="background: #4ade80;"></span></div>
+                                        <div class="legend-item"><span class="legend-color" style="background: #22c55e;"></span> High</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="top-states-list">
+                                <h5 style="color: #1f2937; margin-bottom: 1rem;">Top 10 States by Revenue</h5>
+                                <div class="state-rankings" id="stateRankings">
+                                    <!-- State rankings will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Retention Dashboard -->
+                    <div class="secret-section retention-dashboard-section">
+                        <h4 style="color: #1f2937; margin-bottom: 1.5rem;">🎯 Customer Retention Dashboard</h4>
+                        <p style="color: #6b7280; margin-bottom: 1.5rem; font-size: 0.875rem;">Understanding the strategic value of customer loyalty</p>
+                        
+                        <!-- Business Impact Projection -->
+                        <div class="business-impact-section">
+                            <h5 style="color: #1f2937; margin-bottom: 1rem; font-size: 1.25rem; text-align: center;">💎 The REAL VALUE of Customer Retention</h5>
+                            <p style="color: #6b7280; margin-bottom: 1.5rem; text-align: center; font-size: 0.875rem;">Projected annual business value comparison</p>
+                            
+                            <div class="business-scenarios-grid">
+                                <div class="scenario-card current-scenario">
+                                    <div class="scenario-header">
+                                        <div class="scenario-icon">✅</div>
+                                        <div class="scenario-title">Current Business Model</div>
+                                        <div class="scenario-subtitle">With Repeat Customers</div>
+                                    </div>
+                                    <div class="scenario-value" id="currentBusinessValue">$0</div>
+                                    <div class="scenario-breakdown">
+                                        <div class="breakdown-item">
+                                            <span>New Customers:</span>
+                                            <span id="currentNewCustomerRevenue">$0</span>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span>Repeat Customers:</span>
+                                            <span id="currentRepeatCustomerRevenue">$0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="scenario-card danger-scenario">
+                                    <div class="scenario-header">
+                                        <div class="scenario-icon">⚠️</div>
+                                        <div class="scenario-title">Without Repeats</div>
+                                        <div class="scenario-subtitle">New Customers Only</div>
+                                    </div>
+                                    <div class="scenario-value danger" id="noRepeatBusinessValue">$0</div>
+                                    <div class="scenario-breakdown">
+                                        <div class="breakdown-item">
+                                            <span>New Customers Only:</span>
+                                            <span id="noRepeatRevenue">$0</span>
+                                        </div>
+                                        <div class="breakdown-item danger-text">
+                                            <span>Lost Revenue:</span>
+                                            <span id="lostRevenue">$0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="scenario-card reduced-scenario">
+                                    <div class="scenario-header">
+                                        <div class="scenario-icon">📉</div>
+                                        <div class="scenario-title">50% Retention Loss</div>
+                                        <div class="scenario-subtitle">Half of Repeat Customers Leave</div>
+                                    </div>
+                                    <div class="scenario-value warning" id="reducedBusinessValue">$0</div>
+                                    <div class="scenario-breakdown">
+                                        <div class="breakdown-item">
+                                            <span>New Customers:</span>
+                                            <span id="reducedNewRevenue">$0</span>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span>50% of Repeats:</span>
+                                            <span id="reducedRepeatRevenue">$0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="retention-value-insight" id="retentionValueInsight">
+                                <!-- Dynamic insight will be inserted -->
+                            </div>
+                        </div>
+
+                        <!-- Customer Lifetime Value Metrics -->
+                        <div class="clv-metrics-section">
+                            <h5 style="color: #1f2937; margin-bottom: 1rem; font-size: 1.125rem;">💰 Customer Lifetime Value (CLV)</h5>
+                            <div class="clv-metrics-grid">
+                                <div class="clv-metric-card">
+                                    <div class="clv-metric-label">Average CLV</div>
+                                    <div class="clv-metric-value" id="avgCLV">$0.00</div>
+                                    <div class="clv-metric-subtext">Per customer lifetime</div>
+                                </div>
+                                <div class="clv-metric-card highlight">
+                                    <div class="clv-metric-label">Repeat Customer CLV</div>
+                                    <div class="clv-metric-value" id="repeatCLV">$0.00</div>
+                                    <div class="clv-metric-subtext">Multiple purchases</div>
+                                </div>
+                                <div class="clv-metric-card">
+                                    <div class="clv-metric-label">One-Time Customer CLV</div>
+                                    <div class="clv-metric-value" id="oneTimeCLV">$0.00</div>
+                                    <div class="clv-metric-subtext">Single purchase</div>
+                                </div>
+                                <div class="clv-metric-card projected">
+                                    <div class="clv-metric-label">Projected Annual CLV</div>
+                                    <div class="clv-metric-value" id="projectedCLV">$0.00</div>
+                                    <div class="clv-metric-subtext">Based on trends</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Retention Rates -->
+                        <div class="retention-rates-section">
+                            <h5 style="color: #1f2937; margin-bottom: 1rem; font-size: 1.125rem;">📊 Retention Rates</h5>
+                            <div class="retention-rates-grid">
+                                <div class="retention-rate-card">
+                                    <div class="retention-icon">📅</div>
+                                    <div class="retention-label">Monthly Retention</div>
+                                    <div class="retention-value" id="monthlyRetention">0%</div>
+                                    <div class="retention-subtext" id="monthlyRetentionDetail">-</div>
+                                </div>
+                                <div class="retention-rate-card">
+                                    <div class="retention-icon">📈</div>
+                                    <div class="retention-label">Quarterly Retention</div>
+                                    <div class="retention-value" id="quarterlyRetention">0%</div>
+                                    <div class="retention-subtext" id="quarterlyRetentionDetail">-</div>
+                                </div>
+                                <div class="retention-rate-card">
+                                    <div class="retention-icon">🎯</div>
+                                    <div class="retention-label">Repeat Purchase Rate</div>
+                                    <div class="retention-value" id="repeatPurchaseRate">0%</div>
+                                    <div class="retention-subtext" id="repeatPurchaseDetail">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Repeat Customer Analysis -->
+                    <div class="secret-section">
+                        <h4 style="color: #1f2937; margin-bottom: 1.5rem;">🔁 Repeat Customer Analysis</h4>
+                        <p style="color: #6b7280; margin-bottom: 1.5rem; font-size: 0.875rem;">Understanding customer loyalty and lifetime value</p>
+                        
+                        <!-- Repeat Customer Overview Cards -->
+                        <div class="repeat-customer-overview">
+                            <div class="repeat-metric-card highlight-card">
+                                <div class="repeat-metric-icon">🎯</div>
+                                <div class="repeat-metric-content">
+                                    <span class="repeat-metric-label">Repeat Customers</span>
+                                    <span class="repeat-metric-value" id="repeatCustomerCount">0</span>
+                                    <span class="repeat-metric-subtext" id="repeatCustomerPercent">0%</span>
+                                </div>
+                            </div>
+                            <div class="repeat-metric-card highlight-card">
+                                <div class="repeat-metric-icon">💰</div>
+                                <div class="repeat-metric-content">
+                                    <span class="repeat-metric-label">Revenue from Repeats</span>
+                                    <span class="repeat-metric-value" id="repeatCustomerRevenue">$0</span>
+                                    <span class="repeat-metric-subtext" id="repeatRevenuePercent">0%</span>
+                                </div>
+                            </div>
+                            <div class="repeat-metric-card">
+                                <div class="repeat-metric-icon">📦</div>
+                                <div class="repeat-metric-content">
+                                    <span class="repeat-metric-label">Total Orders from Repeats</span>
+                                    <span class="repeat-metric-value" id="repeatCustomerOrders">0</span>
+                                    <span class="repeat-metric-subtext" id="repeatOrdersPercent">0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Customer Lifetime Value Comparison -->
+                        <div class="repeat-comparison-section">
+                            <h5 style="color: #1f2937; margin-bottom: 1rem; font-size: 1.125rem;">💵 Customer Lifetime Value Comparison</h5>
+                            <div class="order-value-comparison">
+                                <div class="value-comparison-card">
+                                    <div class="comparison-label">Repeat Customer</div>
+                                    <div class="comparison-sublabel">Average Lifetime Value</div>
+                                    <div class="comparison-value repeat" id="repeatCustomerCLV">$0.00</div>
+                                    <div class="comparison-badge repeat-badge" id="repeatCustomerCount2">0 customers</div>
+                                </div>
+                                <div class="value-comparison-divider">
+                                    <div class="vs-badge">VS</div>
+                                </div>
+                                <div class="value-comparison-card">
+                                    <div class="comparison-label">One-Time Customer</div>
+                                    <div class="comparison-sublabel">Single Purchase Value</div>
+                                    <div class="comparison-value single" id="oneTimeCustomerValue">$0.00</div>
+                                    <div class="comparison-badge single-badge" id="oneTimeCustomerCount2">0 customers</div>
+                                </div>
+                            </div>
+                            <div class="comparison-insight" id="orderValueInsight">
+                                <!-- Dynamic insight will be inserted here -->
+                            </div>
+                        </div>
+
+                        <!-- Time Between Orders -->
+                        <div class="repeat-timing-section">
+                            <h5 style="color: #1f2937; margin-bottom: 1rem; font-size: 1.125rem;">⏱️ Time Between Purchases</h5>
+                            <div class="timing-metrics-grid">
+                                <div class="timing-metric-card">
+                                    <div class="timing-icon">1️⃣ → 2️⃣</div>
+                                    <div class="timing-label">1st to 2nd Order</div>
+                                    <div class="timing-value" id="avgDays1to2">-</div>
+                                    <div class="timing-subtext">Average days</div>
+                                </div>
+                                <div class="timing-metric-card">
+                                    <div class="timing-icon">2️⃣ → 3️⃣</div>
+                                    <div class="timing-label">2nd to 3rd Order</div>
+                                    <div class="timing-value" id="avgDays2to3">-</div>
+                                    <div class="timing-subtext">Average days</div>
+                                </div>
+                                <div class="timing-metric-card">
+                                    <div class="timing-icon">3️⃣ → 4️⃣</div>
+                                    <div class="timing-label">3rd to 4th Order</div>
+                                    <div class="timing-value" id="avgDays3to4">-</div>
+                                    <div class="timing-subtext">Average days</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Customer Loyalty Distribution -->
+                        <div class="repeat-distribution-section">
+                            <h5 style="color: #1f2937; margin-bottom: 1rem; font-size: 1.125rem;">📊 Customer Loyalty Distribution</h5>
+                            <div class="loyalty-chart-container">
+                                <canvas id="loyaltyDistributionChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Top Repeat Customers -->
+                        <div class="top-repeat-customers-section">
+                            <h5 style="color: #1f2937; margin-bottom: 1rem; font-size: 1.125rem;">👑 Top 20 Repeat Customers</h5>
+                            <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.875rem;">Your most valuable customers - show them appreciation!</p>
+                            <div class="top-repeat-table-wrapper">
+                                <table class="repeat-customers-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Rank</th>
+                                            <th>Customer</th>
+                                            <th>Orders</th>
+                                            <th>Total Spent</th>
+                                            <th>Avg Order</th>
+                                            <th>Customer Since</th>
+                                            <th>Say Thank You</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="topRepeatCustomersBody">
+                                        <!-- Will be populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Repeat Customer Insights -->
+                        <div class="repeat-insights-grid" id="repeatCustomerInsights">
+                            <!-- Dynamic insights will be generated here -->
+                        </div>
+                    </div>
+
+                    <!-- Key Insights Summary -->
+                    <div class="secret-section insights-section">
+                        <h4 style="color: #1f2937; margin-bottom: 1.5rem;">💡 Key Insights & Recommendations</h4>
+                        <div class="insights-grid" id="insightsGrid">
+                            <!-- Insights will be dynamically generated -->
+                        </div>
+                    </div>
+                </div>
+                <!-- End Secret Analysis Tab -->
+            </div>
+
+            <!-- Inventory Analytics Dashboard -->
+            <div class="dashboard" id="inventoryDashboard" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>📦 Inventory Analytics</h2>
+                    <button class="btn btn-secondary" id="backToExecutiveBtn">← Back to Executive Dashboard</button>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Total Listings</h3>
+                            <span class="card-icon">📊</span>
+                        </div>
+                        <div class="card-value" id="totalListings">0</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>VALUE IF SOLD TODAY</h3>
+                            <span class="card-icon">💰</span>
+                        </div>
+                        <div class="card-value" id="totalValue">$0</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Avg. Days Listed</h3>
+                            <span class="card-icon">📅</span>
+                        </div>
+                        <div class="card-value" id="avgDaysListed">0</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Avg. Value Per Item</h3>
+                            <span class="card-icon">💎</span>
+                        </div>
+                        <div class="card-value" id="avgValuePerItem">$0</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Listed 30+ Days</h3>
+                            <span class="card-icon">📅</span>
+                        </div>
+                        <div class="card-value" id="items30Plus">0</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Listed 60+ Days</h3>
+                            <span class="card-icon">⏰</span>
+                        </div>
+                        <div class="card-value" id="items60Plus">0</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Listed 90+ Days</h3>
+                            <span class="card-icon">⚠️</span>
+                        </div>
+                        <div class="card-value" id="items90Plus">0</div>
+                    </div>
+                </div>
+
+                <!-- Analysis Section -->
+                <div class="analysis-section">
+                    <div class="analysis-grid">
+                        <div class="analysis-card">
+                            <h4>Longest Listed Items</h4>
+                            <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">Items that have been active the longest - may need price adjustments</p>
+                            <div class="item-list" id="longestListedItems"></div>
+                        </div>
+                        <div class="analysis-card">
+                            <h4>Most Watched Items</h4>
+                            <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">Current listings with highest buyer interest</p>
+                            <div class="item-list" id="mostWatchedItems"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales Analytics Dashboard -->
+            <div class="dashboard" id="salesDashboard" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>📈 Sales Analytics</h2>
+                    <button class="btn btn-secondary" id="backToExecutiveBtn2">← Back to Executive Dashboard</button>
+                </div>
+
+                <!-- Sales Summary Cards -->
+                <div class="summary-cards">
+                    <div class="card clickable-card" id="totalSalesCard">
+                        <div class="card-header">
+                            <h3>Total Orders</h3>
+                            <span class="card-icon">💰</span>
+                        </div>
+                        <div class="card-value" id="totalSales">0</div>
+                        <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem;">Click to view</p>
+                    </div>
+                    
+                    <div class="card clickable-card" id="totalRevenueCard">
+                        <div class="card-header">
+                            <h3>Total Revenue</h3>
+                            <span class="card-icon">📈</span>
+                        </div>
+                        <div class="card-value" id="totalRevenue">$0</div>
+                        <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem;">Click to view</p>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Avg. Sale Price</h3>
+                            <span class="card-icon">💎</span>
+                        </div>
+                        <div class="card-value" id="avgSalePrice">$0</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Avg Revenue Per Day</h3>
+                            <span class="card-icon">📊</span>
+                        </div>
+                        <div class="card-value" id="avgRevenuePerDay">$0</div>
+                    </div>
+                </div>
+
+                <!-- Sales Charts -->
+                <div class="charts-section" style="grid-template-columns: 1fr;">
+                    <div class="chart-container">
+                        <h3>Daily Sales Timeline</h3>
+                        <canvas id="dailySalesChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Profitability Metrics -->
+                <div class="profitability-section">
+                    <h3 style="text-align: center; color: #1f2937; margin-bottom: 1.5rem;">📊 Collection Profitability Metrics</h3>
+                    <div class="summary-cards">
+                        <div class="card profit-metric">
+                            <div class="card-header">
+                                <h3>Total Collection Profits</h3>
+                                <span class="card-icon">💰</span>
+                            </div>
+                            <div class="card-value" id="totalCollectionProfits">$0</div>
+                            <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem;">Revenue - Costs - Fees</p>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Avg Days to Break-Even</h3>
+                                <span class="card-icon">📅</span>
+                            </div>
+                            <div class="card-value" id="avgDaysToBreakEven">0</div>
+                            <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem;">Time to recover costs</p>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Avg Hours Per Collection</h3>
+                                <span class="card-icon">⏱️</span>
+                            </div>
+                            <div class="card-value" id="avgHoursPerCollection">0</div>
+                            <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem;">Time investment</p>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Avg Gross Hourly Rate</h3>
+                                <span class="card-icon">💵</span>
+                            </div>
+                            <div class="card-value" id="avgGrossHourlyRate">$0</div>
+                            <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem;">Earnings per hour</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sales Analysis Tabs -->
+                <div class="analysis-section">
+                    <div class="analysis-tabs">
+                        <button class="tab-btn active" data-tab="sales-performance">Sales Performance</button>
+                        <button class="tab-btn" data-tab="collection-performance">Collection Performance</button>
+                    </div>
+
+                    <div class="tab-content">
+                        <!-- Sales Performance Tab -->
+                        <div class="tab-panel active" id="sales-performance-tab">
+                            <div class="sales-table-container">
+                                <div class="sales-table-header">
+                                    <h3>All Sales Orders</h3>
+                                    <div class="sales-table-controls">
+                                        <input type="text" id="salesSearchInput" placeholder="🔍 Search by title, SKU, or price..." class="search-input">
+                                        <div class="sort-buttons">
+                                            <button class="btn btn-small btn-outline" id="sortByDate">Sort by Date</button>
+                                            <button class="btn btn-small btn-outline" id="sortByPrice">Sort by Price</button>
+                                            <button class="btn btn-small btn-outline" id="sortByName">Sort by Name</button>
+                                            <button class="btn btn-small btn-outline" id="sortBySKU">Sort by SKU</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="sales-table-wrapper">
+                                    <table class="sales-table" id="salesTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Item Title</th>
+                                                <th>Collection</th>
+                                                <th>Price</th>
+                                                <th>Quantity</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="salesTableBody">
+                                            <!-- Sales rows will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="table-footer">
+                                    <span id="salesTableCount">0 sales</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collection Performance Tab -->
+                        <div class="tab-panel" id="collection-performance-tab">
+                            <div class="collections-grid" id="collectionsGrid">
+                                <!-- Collection bubbles will be populated here -->
+                            </div>
+                            
+                            <!-- Collection Details View -->
+                            <div class="collection-details" id="collectionDetails" style="display: none;">
+                                <div class="collection-details-header">
+                                    <button class="btn btn-secondary" id="backToCollectionsBtn">← Back to Collections</button>
+                                    <h2 id="collectionDetailsTitle">Collection Details</h2>
+                                </div>
+                                
+                                <div class="collection-details-content">
+                                    <!-- Collection Metrics -->
+                                    <div class="collection-metrics-grid">
+                                        <div class="collection-metric-card">
+                                            <h3>Total Revenue</h3>
+                                            <div class="metric-value" id="collectionDetailTotalRevenue">$0</div>
+                                        </div>
+                                        <div class="collection-metric-card">
+                                            <h3>Total Sales</h3>
+                                            <div class="metric-value" id="collectionDetailTotalSales">0</div>
+                                        </div>
+                                        <div class="collection-metric-card">
+                                            <h3>Average Price</h3>
+                                            <div class="metric-value" id="collectionDetailAvgPrice">$0</div>
+                                        </div>
+                                        <div class="collection-metric-card">
+                                            <h3>Days Running</h3>
+                                            <div class="metric-value" id="collectionDetailDaysRunning">0</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Profitability Metrics (shown when purchase data exists) -->
+                                    <div id="collectionProfitabilityMetrics" style="display: none; margin-top: 2rem;">
+                                        <h3 style="color: #1f2937; margin-bottom: 1rem; text-align: center;">📊 Profitability Analysis</h3>
+                                        <div class="collection-metrics-grid">
+                                            <div class="collection-metric-card" style="background: #fef3c7; border: 2px solid #f59e0b;">
+                                                <h3>Collection Cost</h3>
+                                                <div class="metric-value" id="collectionPurchaseCost">$0</div>
+                                                <small style="color: #92400e;">Initial investment</small>
+                                            </div>
+                                            <div class="collection-metric-card" style="background: #dbeafe; border: 2px solid #3b82f6;">
+                                                <h3>Gross Profit</h3>
+                                                <div class="metric-value" id="collectionGrossProfit">$0</div>
+                                                <small style="color: #1e3a8a;">Revenue - Cost</small>
+                                            </div>
+                                            <div class="collection-metric-card" style="background: #e0e7ff; border: 2px solid #6366f1;">
+                                                <h3>Hours Worked</h3>
+                                                <div class="metric-value" id="collectionHoursWorked">0</div>
+                                                <small style="color: #3730a3;">Time investment</small>
+                                            </div>
+                                            <div class="collection-metric-card profit-card">
+                                                <h3>NET Profit/Loss</h3>
+                                                <div class="metric-value" id="collectionNetProfit">$0</div>
+                                                <small id="collectionNetProfitSubtext">After all expenses</small>
+                                            </div>
+                                            <div class="collection-metric-card" style="background: #f3f4f6; border: 2px solid #6b7280;">
+                                                <h3>Hourly Rate</h3>
+                                                <div class="metric-value" id="collectionEffectiveRate">$0/hr</div>
+                                                <small style="color: #374151;">Actual earnings</small>
+                                            </div>
+                                            <div class="collection-metric-card" style="background: #fef2f2; border: 2px solid #ef4444;">
+                                                <h3>Total Fees Paid</h3>
+                                                <div class="metric-value" id="collectionTotalFees">$0</div>
+                                                <small style="color: #991b1b;">eBay + PayPal</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Revenue Timeline Chart -->
+                                    <div class="chart-section">
+                                        <h3>Revenue Timeline</h3>
+                                        <canvas id="collectionRevenueChart"></canvas>
+                                    </div>
+                                    
+                                    <!-- Sales List -->
+                                    <div class="sales-list-section">
+                                        <div class="sales-list-header">
+                                            <h3>All Sales</h3>
+                                            <div class="sort-controls">
+                                                <button class="btn btn-outline btn-small" id="sortPriceHighBtn">Price: High to Low</button>
+                                                <button class="btn btn-outline btn-small" id="sortPriceLowBtn">Price: Low to High</button>
+                                            </div>
+                                        </div>
+                                        <div class="sales-list" id="collectionSalesList">
+                                            <!-- Sales will be populated here -->
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Price Range Analysis -->
+                                    <div class="price-range-section">
+                                        <h3>Price Range Analysis</h3>
+                                        <div class="price-range-content" id="collectionPriceRangeAnalysis">
+                                            <!-- Price range will be populated here -->
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Quick Collection Purchase Entry -->
+                                    <div class="quick-collection-entry">
+                                        <div class="quick-entry-header">
+                                            <h3>💼 Collection Purchase Information</h3>
+                                            <p style="font-size: 0.875rem; color: #6b7280;">Add purchase data to enable profitability calculations</p>
+                                        </div>
+                                        <form id="quickCollectionForm" class="quick-collection-form">
+                                            <div class="form-row">
+                                                <div class="form-group">
+                                                    <label for="quickCollectionName">Display Name</label>
+                                                    <input type="text" id="quickCollectionName" placeholder="e.g., 2023 Topps Chrome" readonly>
+                                                    <small>Auto-filled from collection</small>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="quickCollectionSKU">Collection SKU</label>
+                                                    <input type="text" id="quickCollectionSKU" placeholder="Matches Custom Label">
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-row">
+                                                <div class="form-group">
+                                                    <label for="quickCollectionPurchaseDate">Purchase Date</label>
+                                                    <input type="date" id="quickCollectionPurchaseDate">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="quickCollectionCost">Total Cost</label>
+                                                    <input type="number" id="quickCollectionCost" placeholder="0.00" step="0.01">
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="quickCollectionNotes">Notes (Optional)</label>
+                                                <textarea id="quickCollectionNotes" rows="2" placeholder="Additional information..."></textarea>
+                                            </div>
+                                            
+                                            <div class="form-actions">
+                                                <button type="submit" class="btn btn-primary">
+                                                    <span class="btn-icon">💾</span>
+                                                    Save Collection Data
+                                                </button>
+                                                <button type="button" class="btn btn-secondary" id="quickClearBtn">Clear</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collection Management Dashboard -->
+            <div class="dashboard" id="collectionManagement" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>📝 Collection Management</h2>
+                    <button class="btn btn-secondary" id="backToExecFromCollections">← Back to Executive Dashboard</button>
+                </div>
+
+                <div class="management-container">
+                    <!-- Add/Edit Collection Form -->
+                    <div class="form-section">
+                        <h3>Add/Edit Collection Purchase Data</h3>
+                        <form id="collectionForm" class="collection-form">
+                            <div class="form-group">
+                                <label for="collectionName">Collection Name</label>
+                                <input type="text" id="collectionName" placeholder="e.g., Black Lotus" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="collectionSKU">SKU / Custom Label</label>
+                                <input type="text" id="collectionSKU" placeholder="Matches eBay Custom Label" required>
+                                <small>Must match the Custom Label (SKU) in your eBay data</small>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="collectionPurchaseDate">Purchase Date</label>
+                                    <input type="date" id="collectionPurchaseDate" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="collectionCost">Total Cost</label>
+                                    <input type="number" id="collectionCost" placeholder="0.00" step="0.01" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="collectionNotes">Notes (Optional)</label>
+                                <textarea id="collectionNotes" rows="3" placeholder="Additional information about this collection..."></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <span class="btn-icon">💾</span>
+                                    Save Collection
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="resetCollectionForm">Clear Form</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Collections List -->
+                    <div class="collections-list-section">
+                        <h3>Saved Collections</h3>
+                        <div id="savedCollectionsList" class="saved-collections">
+                            <!-- Collections will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Settings Dashboard -->
+            <div class="dashboard" id="businessSettings" style="display: none;">
+                <div class="dashboard-header">
+                    <h2>⚙️ Business Settings</h2>
+                    <button class="btn btn-secondary" id="backToExecFromSettings">← Back to Executive Dashboard</button>
+                </div>
+
+                <div class="settings-container">
+                    <div class="settings-intro">
+                        <p>Configure your business metrics to calculate true profitability including time, fees, and taxes.</p>
+                    </div>
+
+                    <form id="businessMetricsForm" class="business-form">
+                        <div class="form-section">
+                            <h3>⏱️ Time Investment</h3>
+                            <div class="form-group">
+                                <label for="minutesPerItem">Minutes per Item (List + Ship)</label>
+                                <input type="number" id="minutesPerItem" placeholder="e.g., 15" step="1" min="0">
+                                <small>Average time to list and ship each item</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="idealHourlyRate">Your Ideal Hourly Rate</label>
+                                <input type="number" id="idealHourlyRate" placeholder="e.g., 50.00" step="0.01" min="0">
+                                <small>What you want to earn per hour of work</small>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>💰 Costs & Fees</h3>
+                            <div class="form-group">
+                                <label for="avgFeePercent">Average Fee Percentage</label>
+                                <input type="number" id="avgFeePercent" placeholder="e.g., 13.5" step="0.1" min="0" max="100">
+                                <small>Combined eBay + PayPal fees percentage</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="taxBracket">Tax Bracket Percentage</label>
+                                <input type="number" id="taxBracket" placeholder="e.g., 25" step="0.1" min="0" max="100">
+                                <small>Your effective tax rate</small>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <span class="btn-icon">💾</span>
+                                Save Business Settings
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Current Settings Display -->
+                    <div class="current-settings" id="currentSettingsDisplay">
+                        <h3>Current Settings</h3>
+                        <div class="settings-grid">
+                            <div class="setting-item">
+                                <span class="setting-label">Minutes per Item:</span>
+                                <span class="setting-value" id="displayMinutesPerItem">Not set</span>
+                            </div>
+                            <div class="setting-item">
+                                <span class="setting-label">Ideal Hourly Rate:</span>
+                                <span class="setting-value" id="displayHourlyRate">Not set</span>
+                            </div>
+                            <div class="setting-item">
+                                <span class="setting-label">Avg Fee %:</span>
+                                <span class="setting-value" id="displayFeePercent">Not set</span>
+                            </div>
+                            <div class="setting-item">
+                                <span class="setting-label">Tax Bracket:</span>
+                                <span class="setting-value" id="displayTaxBracket">Not set</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Collection Details Modal -->
+    <div class="modal" id="collectionModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="collectionModalTitle">Collection Details</h2>
+                <button class="modal-close" id="collectionModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="collection-stats">
+                    <div class="stat-card">
+                        <h3>Total Revenue</h3>
+                        <div class="stat-value" id="collectionTotalRevenue">$0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Sales</h3>
+                        <div class="stat-value" id="collectionTotalSales">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Average Price</h3>
+                        <div class="stat-value" id="collectionAvgPrice">$0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Units</h3>
+                        <div class="stat-value" id="collectionTotalUnits">0</div>
+                    </div>
+                </div>
+                
+                <div class="collection-analysis">
+                    <h3>Recent Sales</h3>
+                    <div class="item-list" id="collectionRecentSales"></div>
+                </div>
+                
+                <div class="collection-analysis">
+                    <h3>Price Range Analysis</h3>
+                    <div id="collectionPriceRange"></div>
+                </div>
+                
+                <div class="collection-analysis">
+                    <h3>Sales Timeline</h3>
+                    <div id="collectionTimeline"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+</html>

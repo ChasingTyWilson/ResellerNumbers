@@ -1,0 +1,27 @@
+# Deployment exclusions
+node_modules/
+.env
+.env.local
+.env.production
+
+# Python files (not needed for web deployment)
+card_cropper.py
+setup_card_cropper.py
+requirements.txt
+
+# Generated/test files
+cropped_cards/
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation (optional - include if you want docs on your site)
+# *.md
