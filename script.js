@@ -1639,17 +1639,20 @@ class ResellerNumbersAnalytics {
         }
 
         this.showProgress();
+        this.showInventoryProgress();
         
         try {
             // Show file size info
             const fileSizeKB = (csvFile.size / 1024).toFixed(1);
             console.log(`📁 Processing file: ${csvFile.name} (${fileSizeKB} KB)`);
             
+            this.updateInventoryProgress(10, 'Reading file...');
             const csvText = await this.readFileAsText(csvFile);
             console.log('CSV text loaded:', csvText.substring(0, 200) + '...');
             
             // Show parsing progress
             console.log('🔄 Parsing CSV data...');
+            this.updateInventoryProgress(30, 'Parsing CSV data...');
             this.inventoryData = this.parseCSV(csvText);
             console.log(`✅ Parsed ${this.inventoryData.length} inventory items`);
             
@@ -1657,11 +1660,19 @@ class ResellerNumbersAnalytics {
                 throw new Error('No valid data found in CSV file. Please check the format.');
             }
             
+            this.updateInventoryProgress(60, 'Analyzing data...');
             this.analyzeInventory();
+            
+            this.updateInventoryProgress(90, 'Finalizing...');
             this.hideProgress();
             this.displayDashboard();
+            
+            this.updateInventoryProgress(100, 'Complete!');
+            setTimeout(() => this.hideInventoryProgress(), 2000);
+            
         } catch (error) {
             console.error('Error processing file:', error);
+            this.updateInventoryProgress(0, 'Error processing file', true);
             alert(`Error processing CSV file: ${error.message}. Please check that your CSV has the correct format with headers like "Item Title", "Current Price", etc.`);
             this.hideProgress();
         }
@@ -1676,17 +1687,20 @@ class ResellerNumbersAnalytics {
         }
 
         this.showSoldProgress();
+        this.showSoldProgressBar();
         
         try {
             // Show file size info
             const fileSizeKB = (csvFile.size / 1024).toFixed(1);
             console.log(`📁 Processing sold file: ${csvFile.name} (${fileSizeKB} KB)`);
             
+            this.updateSoldProgress(10, 'Reading file...');
             const csvText = await this.readFileAsText(csvFile);
             console.log('Sold CSV text loaded:', csvText.substring(0, 200) + '...');
             
             // Show parsing progress
             console.log('🔄 Parsing sold CSV data...');
+            this.updateSoldProgress(30, 'Parsing CSV data...');
             this.soldData = this.parseSoldCSV(csvText);
             console.log(`✅ Parsed ${this.soldData.length} sold items`);
             
@@ -1694,9 +1708,13 @@ class ResellerNumbersAnalytics {
                 throw new Error('No valid data found in sold listings CSV file. Please check the format.');
             }
             
+            this.updateSoldProgress(60, 'Analyzing data...');
             this.analyzeSoldData();
             this.hideSoldProgress();
             this.displaySoldDashboard();
+            
+            this.updateSoldProgress(100, 'Complete!');
+            setTimeout(() => this.hideSoldProgressBar(), 2000);
         } catch (error) {
             console.error('Error processing sold file:', error);
             alert(`Error processing sold listings CSV file: ${error.message}. Please check that your CSV has the correct format.`);
@@ -4702,6 +4720,81 @@ ${data.recommendations.listingOptimizations.map(rec =>
     hideCsvHelp() {
         if (this.csvHelpModal) {
             this.csvHelpModal.style.display = 'none';
+        }
+    }
+    
+    // Progress bar methods
+    showInventoryProgress() {
+        const progressBar = document.getElementById('inventoryProgress');
+        if (progressBar) {
+            progressBar.style.display = 'block';
+            this.updateInventoryProgress(0, 'Starting...');
+        }
+    }
+    
+    hideInventoryProgress() {
+        const progressBar = document.getElementById('inventoryProgress');
+        if (progressBar) {
+            progressBar.style.display = 'none';
+        }
+    }
+    
+    updateInventoryProgress(percent, text, isError = false) {
+        const progressFill = document.getElementById('inventoryProgressFill');
+        const progressText = document.getElementById('inventoryProgressText');
+        const progressPercent = document.getElementById('inventoryProgressPercent');
+        const progressBar = document.getElementById('inventoryProgress');
+        
+        if (progressFill) progressFill.style.width = percent + '%';
+        if (progressText) progressText.textContent = text;
+        if (progressPercent) progressPercent.textContent = percent + '%';
+        
+        if (progressBar) {
+            progressBar.className = 'upload-progress';
+            if (isError) {
+                progressBar.classList.add('progress-error');
+            } else if (percent === 100) {
+                progressBar.classList.add('progress-complete');
+            } else {
+                progressBar.classList.add('progress-processing');
+            }
+        }
+    }
+    
+    showSoldProgressBar() {
+        const progressBar = document.getElementById('soldProgress');
+        if (progressBar) {
+            progressBar.style.display = 'block';
+            this.updateSoldProgress(0, 'Starting...');
+        }
+    }
+    
+    hideSoldProgressBar() {
+        const progressBar = document.getElementById('soldProgress');
+        if (progressBar) {
+            progressBar.style.display = 'none';
+        }
+    }
+    
+    updateSoldProgress(percent, text, isError = false) {
+        const progressFill = document.getElementById('soldProgressFill');
+        const progressText = document.getElementById('soldProgressText');
+        const progressPercent = document.getElementById('soldProgressPercent');
+        const progressBar = document.getElementById('soldProgress');
+        
+        if (progressFill) progressFill.style.width = percent + '%';
+        if (progressText) progressText.textContent = text;
+        if (progressPercent) progressPercent.textContent = percent + '%';
+        
+        if (progressBar) {
+            progressBar.className = 'upload-progress';
+            if (isError) {
+                progressBar.classList.add('progress-error');
+            } else if (percent === 100) {
+                progressBar.classList.add('progress-complete');
+            } else {
+                progressBar.classList.add('progress-processing');
+            }
         }
     }
     

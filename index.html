@@ -331,18 +331,29 @@
                                 </button>
                             </div>
                             <p>Upload your current eBay listings CSV</p>
-                            <div class="upload-area" id="inventoryUploadArea">
-                                <div class="upload-content">
-                                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="7,10 12,15 17,10"></polyline>
-                                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                                    </svg>
-                                    <h4>Drop inventory CSV here</h4>
-                                    <p>or <span class="upload-link">browse files</span></p>
-                                </div>
-                                <input type="file" id="inventoryFileInput" accept=".csv" style="display: none;">
+                        <div class="upload-area" id="inventoryUploadArea">
+                            <div class="upload-content">
+                                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7,10 12,15 17,10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <h4>Drop inventory CSV here</h4>
+                                <p>or <span class="upload-link">browse files</span></p>
                             </div>
+                            <input type="file" id="inventoryFileInput" accept=".csv" style="display: none;">
+                            
+                            <!-- Progress Bar -->
+                            <div class="upload-progress" id="inventoryProgress" style="display: none;">
+                                <div class="progress-header">
+                                    <span class="progress-text" id="inventoryProgressText">Processing...</span>
+                                    <span class="progress-percentage" id="inventoryProgressPercent">0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="inventoryProgressFill"></div>
+                                </div>
+                            </div>
+                        </div>
                             <div class="file-status" id="inventoryFileStatus"></div>
                         </div>
                     </div>
@@ -363,6 +374,17 @@
                                     <p>or <span class="upload-link">browse files</span></p>
                                 </div>
                                 <input type="file" id="soldFileInput" accept=".csv" style="display: none;">
+                                
+                                <!-- Progress Bar -->
+                                <div class="upload-progress" id="soldProgress" style="display: none;">
+                                    <div class="progress-header">
+                                        <span class="progress-text" id="soldProgressText">Processing...</span>
+                                        <span class="progress-percentage" id="soldProgressPercent">0%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="soldProgressFill"></div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="file-status" id="soldFileStatus"></div>
                         </div>
