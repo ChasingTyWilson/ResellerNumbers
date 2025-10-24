@@ -1,5 +1,5 @@
 -- ============================================
--- SUPABASE PROFILES TABLE SETUP
+-- SUPABASE PROFILES TABLE SETUP (SAFE VERSION)
 -- Run this in your Supabase SQL Editor
 -- ============================================
 
@@ -18,6 +18,10 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 -- Enable Row Level Security
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 
 -- Create policies
 CREATE POLICY "Users can view own profile" ON public.profiles
@@ -59,6 +63,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Drop existing trigger if it exists
+DROP TRIGGER IF EXISTS handle_profiles_updated_at ON public.profiles;
 CREATE TRIGGER handle_profiles_updated_at
     BEFORE UPDATE ON public.profiles
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
