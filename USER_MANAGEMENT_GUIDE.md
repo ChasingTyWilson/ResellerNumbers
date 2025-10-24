@@ -108,8 +108,9 @@ async sendWelcomeEmail(userId) {
 ## 🛠 **Setup Instructions**
 
 ### **1. Access User Management Dashboard**
-- Navigate to `user-management.html` in your browser
-- Use your Supabase admin credentials
+- Navigate to `https://www.resellernumbers.com/admin-access.html`
+- Enter admin password: `reseller2024`
+- Click "👥 User Management"
 
 ### **2. Configure Email Service (Optional)**
 Choose one of these options:

@@ -173,6 +173,21 @@
         // Simple admin password (you should change this!)
         const ADMIN_PASSWORD = 'reseller2024';
         
+        // Update links to use the new domain
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update user management link
+            const userMgmtLink = document.querySelector('a[href="user-management.html"]');
+            if (userMgmtLink) {
+                userMgmtLink.href = 'https://www.resellernumbers.com/user-management.html';
+            }
+            
+            // Update main app link
+            const mainAppLink = document.querySelector('a[href="index.html"]');
+            if (mainAppLink) {
+                mainAppLink.href = 'https://www.resellernumbers.com/';
+            }
+        });
+        
         document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             

@@ -10,7 +10,7 @@
    git add .
    git commit -m "Initial commit - eBay Analytics Platform"
    git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/ebay-analytics.git
+   git remote add origin https://github.com/YOUR_USERNAME/reseller-numbers.git
    git push -u origin main
    ```
 
