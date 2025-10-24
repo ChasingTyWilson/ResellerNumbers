@@ -1327,12 +1327,8 @@ class ResellerNumbersAnalytics {
                 }
             }
 
-                // Update sync status display
-                await this.updateSyncStatusDisplay();
-            } else {
-                this.showFileStatus(type, 'warning', `${data.length} items loaded (sync failed, using session only)`);
-                console.error('Sync failed:', result?.error);
-            }
+            // Update sync status display
+            await this.updateSyncStatusDisplay();
         } catch (error) {
             console.error('Error syncing to Supabase:', error);
             this.showFileStatus(type, 'warning', `${data.length} items loaded (sync error, using session only)`);
