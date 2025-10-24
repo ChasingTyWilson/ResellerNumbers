@@ -542,14 +542,27 @@ class SupabaseService {
         try {
             if (!this.currentUser) throw new Error('User not authenticated');
             
+            console.log(`🔄 Syncing ${salesArray.length} sales to Supabase...`);
+            
             const stats = {
                 newSales: 0,
                 duplicates: 0,
                 errors: []
             };
 
-            for (const sale of salesArray) {
-                try {
+            // Process in batches of 100 to avoid timeout
+            const batchSize = 100;
+            const batches = [];
+            for (let i = 0; i < salesArray.length; i += batchSize) {
+                batches.push(salesArray.slice(i, i + batchSize));
+            }
+
+            for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+                const batch = batches[batchIndex];
+                console.log(`Processing batch ${batchIndex + 1}/${batches.length} (${batch.length} items)`);
+                
+                for (const sale of batch) {
+                    try {
                     const normalizedTitle = (sale['Item Title'] || sale['Title'] || sale.title || '').trim();
                     if (!normalizedTitle) continue;
 
@@ -597,6 +610,12 @@ class SupabaseService {
                 } catch (itemError) {
                     console.error('Error processing sale:', itemError);
                     stats.errors.push({ item: sale['Item Title'] || 'Unknown', error: itemError.message });
+                }
+                }
+                
+                // Small delay between batches to prevent overwhelming the database
+                if (batchIndex < batches.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
                 }
             }
 

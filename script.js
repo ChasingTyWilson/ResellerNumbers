@@ -1237,6 +1237,8 @@ class ResellerNumbersAnalytics {
                 this.updateSoldProgress(70, 'Syncing to cloud...');
             }
             
+            console.log(`🔄 Starting sync for ${type} with ${data.length} items`);
+            
             let result;
             // Add timeout to prevent hanging
             const syncPromise = (() => {
@@ -1250,10 +1252,11 @@ class ResellerNumbersAnalytics {
             })();
             
             const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Sync timeout - operation took too long')), 15000); // 15 second timeout
+                setTimeout(() => reject(new Error('Sync timeout - operation took too long')), 30000); // 30 second timeout
             });
             
             result = await Promise.race([syncPromise, timeoutPromise]);
+            console.log('Sync result:', result);
 
             if (result && result.success) {
                 const stats = result.stats;
@@ -1292,7 +1295,14 @@ class ResellerNumbersAnalytics {
             // Update sync status display
             await this.updateSyncStatusDisplay();
         } catch (error) {
-            console.error('Error syncing to Supabase:', error);
+            console.error('❌ Error syncing to Supabase:', error);
+            console.error('Error details:', {
+                type: type,
+                dataLength: data.length,
+                errorMessage: error.message,
+                errorStack: error.stack
+            });
+            
             this.showFileStatus(type, 'warning', `${data.length} items loaded (sync error, using session only)`);
             
             // Update progress bar to show error but continue
