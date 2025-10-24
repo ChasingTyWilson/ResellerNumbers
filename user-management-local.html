@@ -457,13 +457,10 @@
 
             async loadUsers() {
                 try {
-                    // Load users from Supabase
+                    // Load users from Supabase - simplified query
                     const { data: users, error } = await this.supabase
                         .from('profiles')
-                        .select(`
-                            *,
-                            auth.users!inner(email, created_at, last_sign_in_at, email_confirmed_at)
-                        `)
+                        .select('*')
                         .order('created_at', { ascending: false });
 
                     if (error) throw error;
