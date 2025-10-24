@@ -117,10 +117,23 @@ class ResellerNumbersAnalytics {
             const user = await supabaseService.getCurrentUser();
             console.log('Current user:', user);
             if (user) {
-                // User is logged in with Supabase
-                console.log('✅ User logged in with Supabase, showing app');
-                this.showApp();
-                return;
+                // Check if user is approved
+                const profile = await supabaseService.getUserProfile();
+                console.log('User profile:', profile);
+                if (profile && profile.status === 'active') {
+                    // User is logged in and approved with Supabase
+                    console.log('✅ User logged in and approved with Supabase, showing app');
+                    this.showApp();
+                    return;
+                } else if (profile && profile.status === 'pending') {
+                    console.log('⚠️ User account is pending approval');
+                    alert('Your account is pending approval. Please wait for admin approval before accessing the platform.');
+                    return;
+                } else if (profile && profile.status === 'suspended') {
+                    console.log('⚠️ User account is suspended');
+                    alert('Your account has been suspended. Please contact support for assistance.');
+                    return;
+                }
             }
         } else {
             console.log('⚠️ Supabase not available, checking demo mode...');
@@ -225,17 +238,9 @@ class ResellerNumbersAnalytics {
             console.log('Signup result:', result);
             
             if (result.success) {
-                alert('✅ Account created successfully! Starting your 14-day free trial.');
-                // Sign in with the same credentials
-                const loginResult = await supabaseService.signIn(email, password);
-                console.log('Auto-login result:', loginResult);
-                if (loginResult.success) {
-                    await this.loadUserData();
-                    this.showApp();
-                } else {
-                    console.error('Auto-login failed:', loginResult.error);
-                    alert('Account created but auto-login failed. Please try logging in manually.');
-                }
+                alert('✅ Account created successfully! Your account is pending approval. You will receive an email once approved.');
+                // Don't auto-login pending users
+                alert('Please wait for approval before accessing your account.');
             } else {
                 alert('❌ Signup failed: ' + result.error);
             }

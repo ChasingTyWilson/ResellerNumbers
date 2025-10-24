@@ -64,6 +64,7 @@ class SupabaseService {
                         id: data.user.id,
                         email: email,
                         full_name: fullName,
+                        status: 'pending', // New users need approval
                         subscription_status: 'trial',
                         subscription_plan: 'free',
                         trial_ends_at: trialEndsAt.toISOString()

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Reseller Numbers</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-service.js"></script>
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .admin-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .admin-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .users-table {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .table-header h2 {
+            margin: 0;
+            color: #1f2937;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .users-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .users-table th,
+        .users-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .users-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .users-table td {
+            color: #1f2937;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-trial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-pending {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .status-suspended {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-admin {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-approve {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-approve:hover {
+            background: #059669;
+        }
+        
+        .btn-suspend {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-suspend:hover {
+            background: #dc2626;
+        }
+        
+        .btn-email {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-email:hover {
+            background: #2563eb;
+        }
+        
+        .filters {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .filters h3 {
+            margin: 0 0 1rem 0;
+            color: #1f2937;
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .filter-group label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+        
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Header -->
+        <div class="admin-header">
+            <h1>👥 User Management</h1>
+            <p>Manage users, subscriptions, and access control</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalUsers">-</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeUsers">-</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="trialUsers">-</div>
+                <div class="stat-label">Trial Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pendingUsers">-</div>
+                <div class="stat-label">Pending Approval</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <h3>Filter Users</h3>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="trial">Trial</option>
+                        <option value="pending">Pending</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Subscription</label>
+                    <select id="subscriptionFilter">
+                        <option value="">All Subscriptions</option>
+                        <option value="trial">Free Trial</option>
+                        <option value="pro">Pro</option>
+                        <option value="enterprise">Enterprise</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" id="searchInput" placeholder="Search by name or email...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="users-table">
+            <div class="table-header">
+                <h2>Users</h2>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Subscription</th>
+                            <th>Joined</th>
+                            <th>Last Active</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="7" class="loading">Loading users...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class UserManagement {
+            constructor() {
+                this.users = [];
+                this.filteredUsers = [];
+                this.supabase = null;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    // Initialize Supabase
+                    this.supabase = initSupabase();
+                    if (!this.supabase) {
+                        throw new Error('Supabase not initialized');
+                    }
+
+                    // Load users
+                    await this.loadUsers();
+                    
+                    // Setup event listeners
+                    this.setupEventListeners();
+                    
+                } catch (error) {
+                    console.error('Error initializing user management:', error);
+                    this.showError('Failed to initialize user management system');
+                }
+            }
+
+            setupEventListeners() {
+                // Filter event listeners
+                document.getElementById('statusFilter').addEventListener('change', () => this.filterUsers());
+                document.getElementById('subscriptionFilter').addEventListener('change', () => this.filterUsers());
+                document.getElementById('searchInput').addEventListener('input', () => this.filterUsers());
+            }
+
+            async loadUsers() {
+                try {
+                    // Load users from Supabase
+                    const { data: users, error } = await this.supabase
+                        .from('profiles')
+                        .select(`
+                            *,
+                            auth.users!inner(email, created_at, last_sign_in_at, email_confirmed_at)
+                        `)
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+
+                    this.users = users || [];
+                    this.filteredUsers = [...this.users];
+                    
+                    // Update stats
+                    this.updateStats();
+                    
+                    // Render users table
+                    this.renderUsersTable();
+                    
+                } catch (error) {
+                    console.error('Error loading users:', error);
+                    this.showError('Failed to load users');
+                }
+            }
+
+            updateStats() {
+                const totalUsers = this.users.length;
+                const activeUsers = this.users.filter(user => user.status === 'active').length;
+                const trialUsers = this.users.filter(user => user.subscription_status === 'trial').length;
+                const pendingUsers = this.users.filter(user => user.status === 'pending').length;
+
+                document.getElementById('totalUsers').textContent = totalUsers;
+                document.getElementById('activeUsers').textContent = activeUsers;
+                document.getElementById('trialUsers').textContent = trialUsers;
+                document.getElementById('pendingUsers').textContent = pendingUsers;
+            }
+
+            filterUsers() {
+                const statusFilter = document.getElementById('statusFilter').value;
+                const subscriptionFilter = document.getElementById('subscriptionFilter').value;
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+                this.filteredUsers = this.users.filter(user => {
+                    const matchesStatus = !statusFilter || user.status === statusFilter;
+                    const matchesSubscription = !subscriptionFilter || user.subscription_status === subscriptionFilter;
+                    const matchesSearch = !searchTerm || 
+                        user.full_name?.toLowerCase().includes(searchTerm) ||
+                        user.email?.toLowerCase().includes(searchTerm);
+
+                    return matchesStatus && matchesSubscription && matchesSearch;
+                });
+
+                this.renderUsersTable();
+            }
+
+            renderUsersTable() {
+                const tbody = document.getElementById('usersTableBody');
+                
+                if (this.filteredUsers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="loading">No users found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = this.filteredUsers.map(user => `
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="user-avatar">
+                                    ${user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600;">${user.full_name || 'Unknown'}</div>
+                                    <div style="font-size: 0.75rem; color: #6b7280;">ID: ${user.id}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${user.email || 'N/A'}</td>
+                        <td>
+                            <span class="status-badge status-${user.status || 'pending'}">
+                                ${user.status || 'pending'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge status-${user.subscription_status || 'trial'}">
+                                ${user.subscription_status || 'trial'}
+                            </span>
+                        </td>
+                        <td>${user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</td>
+                        <td>${user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never'}</td>
+                        <td>
+                            <div class="action-buttons">
+                                ${user.status === 'pending' ? `
+                                    <button class="btn-admin btn-approve" onclick="userManagement.approveUser('${user.id}')">
+                                        Approve
+                                    </button>
+                                ` : ''}
+                                ${user.status === 'active' ? `
+                                    <button class="btn-admin btn-suspend" onclick="userManagement.suspendUser('${user.id}')">
+                                        Suspend
+                                    </button>
+                                ` : ''}
+                                <button class="btn-admin btn-email" onclick="userManagement.sendEmail('${user.email}')">
+                                    Email
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            async approveUser(userId) {
+                try {
+                    const { error } = await this.supabase
+                        .from('profiles')
+                        .update({ status: 'active' })
+                        .eq('id', userId);
+
+                    if (error) throw error;
+
+                    // Send welcome email
+                    await this.sendWelcomeEmail(userId);
+                    
+                    // Reload users
+                    await this.loadUsers();
+                    
+                    alert('User approved successfully!');
+                    
+                } catch (error) {
+                    console.error('Error approving user:', error);
+                    alert('Failed to approve user');
+                }
+            }
+
+            async suspendUser(userId) {
+                if (!confirm('Are you sure you want to suspend this user?')) return;
+
+                try {
+                    const { error } = await this.supabase
+                        .from('profiles')
+                        .update({ status: 'suspended' })
+                        .eq('id', userId);
+
+                    if (error) throw error;
+                    
+                    // Reload users
+                    await this.loadUsers();
+                    
+                    alert('User suspended successfully!');
+                    
+                } catch (error) {
+                    console.error('Error suspending user:', error);
+                    alert('Failed to suspend user');
+                }
+            }
+
+            async sendWelcomeEmail(userId) {
+                try {
+                    // Get user details
+                    const { data: user, error } = await this.supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', userId)
+                        .single();
+
+                    if (error) throw error;
+
+                    // Here you would integrate with your email service
+                    // For now, we'll just log the action
+                    console.log('Sending welcome email to:', user.email);
+                    
+                    // You can integrate with services like:
+                    // - SendGrid
+                    // - Mailgun
+                    // - AWS SES
+                    // - Resend
+                    
+                } catch (error) {
+                    console.error('Error sending welcome email:', error);
+                }
+            }
+
+            sendEmail(email) {
+                // Open email client
+                window.open(`mailto:${email}?subject=Reseller Numbers Support`);
+            }
+
+            showError(message) {
+                const container = document.querySelector('.admin-container');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.textContent = message;
+                container.insertBefore(errorDiv, container.firstChild);
+            }
+        }
+
+        // Initialize user management when page loads
+        let userManagement;
+        document.addEventListener('DOMContentLoaded', () => {
+            userManagement = new UserManagement();
+        });
+    </script>
+</body>
+</html>
