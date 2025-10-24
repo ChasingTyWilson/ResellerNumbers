@@ -458,12 +458,15 @@
             async loadUsers() {
                 try {
                     console.log('Attempting to load users from profiles table...');
+                    console.log('Supabase client:', this.supabase);
                     
                     // Try to load from profiles table first
                     const { data: profiles, error: profilesError } = await this.supabase
                         .from('profiles')
                         .select('*')
                         .order('created_at', { ascending: false });
+
+                    console.log('Supabase response:', { data: profiles, error: profilesError });
 
                     if (profilesError) {
                         console.log('Profiles table error:', profilesError.message);
@@ -497,6 +500,7 @@
                     console.log('Raw profiles data:', profiles);
                     console.log('Profiles data type:', typeof profiles);
                     console.log('Profiles is array:', Array.isArray(profiles));
+                    console.log('Profiles length:', profiles ? profiles.length : 'null');
                     
                     this.users = profiles || [];
                     this.filteredUsers = [...this.users];
@@ -516,7 +520,7 @@
                     
                     // Show debug info
                     if (this.users.length === 0) {
-                        this.showError('No users found in profiles table. Please check if users were migrated correctly.');
+                        this.showError('No users found in profiles table. The table exists but is empty. Please check if users were migrated correctly.');
                     } else {
                         this.showSuccess(`Found ${this.users.length} users in the database.`);
                     }
