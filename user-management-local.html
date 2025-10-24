@@ -618,19 +618,32 @@
 
             async approveUser(userId) {
                 try {
-                    // Check if profiles table exists
-                    const { error } = await this.supabase
+                    console.log('Attempting to approve user:', userId);
+                    
+                    const { data, error } = await this.supabase
                         .from('profiles')
                         .update({ status: 'active' })
-                        .eq('id', userId);
+                        .eq('id', userId)
+                        .select();
+
+                    console.log('Update response:', { data, error });
 
                     if (error) {
+                        console.error('Update error:', error);
                         if (error.message.includes('relation "public.profiles" does not exist')) {
                             alert('Profiles table not found. Please run the setup-profiles-table.sql script in Supabase first.');
                             return;
                         }
                         throw error;
                     }
+
+                    if (!data || data.length === 0) {
+                        console.warn('No rows were updated');
+                        alert('No rows were updated. User may not exist or you may not have permission to update.');
+                        return;
+                    }
+
+                    console.log('Successfully updated user:', data[0]);
 
                     // Send welcome email
                     await this.sendWelcomeEmail(userId);
@@ -650,18 +663,32 @@
                 if (!confirm('Are you sure you want to suspend this user?')) return;
 
                 try {
-                    const { error } = await this.supabase
+                    console.log('Attempting to suspend user:', userId);
+                    
+                    const { data, error } = await this.supabase
                         .from('profiles')
                         .update({ status: 'suspended' })
-                        .eq('id', userId);
+                        .eq('id', userId)
+                        .select();
+
+                    console.log('Update response:', { data, error });
 
                     if (error) {
+                        console.error('Update error:', error);
                         if (error.message.includes('relation "public.profiles" does not exist')) {
                             alert('Profiles table not found. Please run the setup-profiles-table.sql script in Supabase first.');
                             return;
                         }
                         throw error;
                     }
+
+                    if (!data || data.length === 0) {
+                        console.warn('No rows were updated');
+                        alert('No rows were updated. User may not exist or you may not have permission to update.');
+                        return;
+                    }
+
+                    console.log('Successfully updated user:', data[0]);
                     
                     // Reload users
                     await this.loadUsers();
