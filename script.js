@@ -31,6 +31,9 @@ class ResellerNumbersAnalytics {
     }
 
     async initializeSupabase() {
+        // Wait a moment for Supabase config to load
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         // Initialize Supabase service
         const initialized = await supabaseService.initialize();
         if (initialized) {
@@ -166,6 +169,10 @@ class ResellerNumbersAnalytics {
         const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
         const agreeTerms = document.getElementById('agreeTerms').checked;
 
+        console.log('🔍 Starting signup process...');
+        console.log('Supabase service available:', !!supabaseService);
+        console.log('Supabase client available:', !!(supabaseService && supabaseService.client));
+
         // Validation
         if (!name || !email || !password || !passwordConfirm) {
             alert('❌ Please fill in all fields.');
@@ -189,20 +196,27 @@ class ResellerNumbersAnalytics {
 
         // Check if using Supabase
         if (supabaseService && supabaseService.client) {
+            console.log('✅ Using Supabase for signup');
             const result = await supabaseService.signUp(email, password, name);
+            console.log('Signup result:', result);
             
             if (result.success) {
                 alert('✅ Account created successfully! Starting your 14-day free trial.');
                 // Sign in with the same credentials
                 const loginResult = await supabaseService.signIn(email, password);
+                console.log('Auto-login result:', loginResult);
                 if (loginResult.success) {
                     await this.loadUserData();
                     this.showApp();
+                } else {
+                    console.error('Auto-login failed:', loginResult.error);
+                    alert('Account created but auto-login failed. Please try logging in manually.');
                 }
             } else {
                 alert('❌ Signup failed: ' + result.error);
             }
         } else {
+            console.log('⚠️ Using demo mode fallback');
             // Demo mode fallback
             const mockAuthToken = 'demo_token_' + Date.now();
             const mockUserData = {
