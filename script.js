@@ -1641,11 +1641,17 @@ class ResellerNumbersAnalytics {
         this.showProgress();
         
         try {
+            // Show file size info
+            const fileSizeKB = (csvFile.size / 1024).toFixed(1);
+            console.log(`📁 Processing file: ${csvFile.name} (${fileSizeKB} KB)`);
+            
             const csvText = await this.readFileAsText(csvFile);
             console.log('CSV text loaded:', csvText.substring(0, 200) + '...');
             
+            // Show parsing progress
+            console.log('🔄 Parsing CSV data...');
             this.inventoryData = this.parseCSV(csvText);
-            console.log('Parsed inventory data:', this.inventoryData);
+            console.log(`✅ Parsed ${this.inventoryData.length} inventory items`);
             
             if (this.inventoryData.length === 0) {
                 throw new Error('No valid data found in CSV file. Please check the format.');
@@ -1672,11 +1678,17 @@ class ResellerNumbersAnalytics {
         this.showSoldProgress();
         
         try {
+            // Show file size info
+            const fileSizeKB = (csvFile.size / 1024).toFixed(1);
+            console.log(`📁 Processing sold file: ${csvFile.name} (${fileSizeKB} KB)`);
+            
             const csvText = await this.readFileAsText(csvFile);
             console.log('Sold CSV text loaded:', csvText.substring(0, 200) + '...');
             
+            // Show parsing progress
+            console.log('🔄 Parsing sold CSV data...');
             this.soldData = this.parseSoldCSV(csvText);
-            console.log('Parsed sold data:', this.soldData);
+            console.log(`✅ Parsed ${this.soldData.length} sold items`);
             
             if (this.soldData.length === 0) {
                 throw new Error('No valid data found in sold listings CSV file. Please check the format.');
