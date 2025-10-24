@@ -1172,7 +1172,12 @@ class ResellerNumbersAnalytics {
         }
 
         try {
-            this.showFileStatus(type, 'info', `Syncing ${data.length} items...`);
+            // Update progress bar instead of showing sync message
+            if (type === 'inventory') {
+                this.updateInventoryProgress(70, 'Syncing to cloud...');
+            } else if (type === 'sold') {
+                this.updateSoldProgress(70, 'Syncing to cloud...');
+            }
             
             let result;
             if (type === 'inventory') {
@@ -1185,16 +1190,19 @@ class ResellerNumbersAnalytics {
 
             if (result && result.success) {
                 const stats = result.stats;
-                let summaryMessage = '';
+                
+                // Update progress bar to show sync complete
+                if (type === 'inventory') {
+                    this.updateInventoryProgress(85, 'Sync complete!');
+                } else if (type === 'sold') {
+                    this.updateSoldProgress(85, 'Sync complete!');
+                }
                 
                 if (type === 'inventory') {
-                    summaryMessage = `✅ Sync Complete!\n• ${stats.newItems} new items\n• ${stats.updatedItems} items updated\n• ${stats.unchangedItems} unchanged`;
                     this.showFileStatus(type, 'success', `${data.length} items loaded | ${stats.newItems} new, ${stats.updatedItems} updated`);
                 } else if (type === 'sold') {
-                    summaryMessage = `✅ Sync Complete!\n• ${stats.newSales} new sales\n• ${stats.duplicates} duplicates skipped`;
                     this.showFileStatus(type, 'success', `${data.length} sales loaded | ${stats.newSales} new`);
                 } else if (type === 'unsold') {
-                    summaryMessage = `✅ Sync Complete!\n• ${stats.newUnsold} new unsold items\n• ${stats.duplicates} duplicates skipped`;
                     this.showFileStatus(type, 'success', `${data.length} unsold loaded | ${stats.newUnsold} new`);
                 }
 
