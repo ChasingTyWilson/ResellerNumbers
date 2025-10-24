@@ -103,10 +103,14 @@ class ResellerNumbersAnalytics {
 
         // Handle demo mode button
         const demoModeBtn = document.getElementById('demoModeBtn');
+        console.log('Demo mode button found:', !!demoModeBtn);
         if (demoModeBtn) {
             demoModeBtn.addEventListener('click', async () => {
+                console.log('Demo mode button clicked!');
                 await this.handleDemoMode();
             });
+        } else {
+            console.error('Demo mode button not found!');
         }
 
         // Mark listeners as setup
@@ -268,21 +272,29 @@ class ResellerNumbersAnalytics {
     async handleDemoMode() {
         console.log('🎮 Starting demo mode...');
         
-        // Create demo user data
-        const mockAuthToken = 'demo_token_' + Date.now();
-        const mockUserData = {
-            email: 'demo@resellernumbers.com',
-            name: 'Demo User',
-            subscriptionStatus: 'trial',
-            trialEndDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
-        };
+        try {
+            // Create demo user data
+            const mockAuthToken = 'demo_token_' + Date.now();
+            const mockUserData = {
+                email: 'demo@resellernumbers.com',
+                name: 'Demo User',
+                subscriptionStatus: 'trial',
+                trialEndDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+            };
 
-        // Store in localStorage
-        localStorage.setItem('authToken', mockAuthToken);
-        localStorage.setItem('userData', JSON.stringify(mockUserData));
+            // Store in localStorage
+            localStorage.setItem('authToken', mockAuthToken);
+            localStorage.setItem('userData', JSON.stringify(mockUserData));
 
-        alert('✅ Welcome to Demo Mode! You can explore all features with sample data.');
-        this.showApp();
+            console.log('Demo data stored in localStorage');
+            alert('✅ Welcome to Demo Mode! You can explore all features with sample data.');
+            
+            console.log('Calling showApp()...');
+            this.showApp();
+        } catch (error) {
+            console.error('Error in handleDemoMode:', error);
+            alert('❌ Error starting demo mode: ' + error.message);
+        }
     }
 
     async loadUserData() {
