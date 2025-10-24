@@ -495,8 +495,16 @@
 
                     // Successfully loaded from profiles table
                     console.log('Raw profiles data:', profiles);
+                    console.log('Profiles data type:', typeof profiles);
+                    console.log('Profiles is array:', Array.isArray(profiles));
+                    
                     this.users = profiles || [];
                     this.filteredUsers = [...this.users];
+                    
+                    // Debug: Log each user
+                    this.users.forEach((user, index) => {
+                        console.log(`User ${index}:`, user);
+                    });
                     
                     // Update stats
                     this.updateStats();
