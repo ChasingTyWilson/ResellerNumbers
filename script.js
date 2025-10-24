@@ -1208,13 +1208,22 @@ class ResellerNumbersAnalytics {
             }
             
             let result;
-            if (type === 'inventory') {
-                result = await supabaseService.syncInventoryHistory(data);
-            } else if (type === 'sold') {
-                result = await supabaseService.syncSalesHistory(data);
-            } else if (type === 'unsold') {
-                result = await supabaseService.syncUnsoldHistory(data);
-            }
+            // Add timeout to prevent hanging
+            const syncPromise = (() => {
+                if (type === 'inventory') {
+                    return supabaseService.syncInventoryHistory(data);
+                } else if (type === 'sold') {
+                    return supabaseService.syncSalesHistory(data);
+                } else if (type === 'unsold') {
+                    return supabaseService.syncUnsoldHistory(data);
+                }
+            })();
+            
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Sync timeout - operation took too long')), 60000); // 60 second timeout
+            });
+            
+            result = await Promise.race([syncPromise, timeoutPromise]);
 
             if (result && result.success) {
                 const stats = result.stats;
@@ -1241,6 +1250,14 @@ class ResellerNumbersAnalytics {
                 if (stats.errors && stats.errors.length > 0) {
                     console.warn(`⚠️ ${stats.errors.length} items had errors:`, stats.errors);
                 }
+            } else {
+                console.error('Sync failed:', result);
+                if (type === 'inventory') {
+                    this.updateInventoryProgress(0, 'Sync failed', true);
+                } else if (type === 'sold') {
+                    this.updateSoldProgress(0, 'Sync failed', true);
+                }
+            }
 
                 // Update sync status display
                 await this.updateSyncStatusDisplay();
@@ -1251,6 +1268,13 @@ class ResellerNumbersAnalytics {
         } catch (error) {
             console.error('Error syncing to Supabase:', error);
             this.showFileStatus(type, 'warning', `${data.length} items loaded (sync error, using session only)`);
+            
+            // Update progress bar to show error
+            if (type === 'inventory') {
+                this.updateInventoryProgress(0, 'Sync error', true);
+            } else if (type === 'sold') {
+                this.updateSoldProgress(0, 'Sync error', true);
+            }
         }
     }
 
