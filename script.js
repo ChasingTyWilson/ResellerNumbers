@@ -8356,18 +8356,18 @@ document.addEventListener('DOMContentLoaded', () => {
 // Admin Access Functions
 function showAdminAccess() {
     console.log('showAdminAccess called');
-    const modal = document.getElementById('adminModal');
-    console.log('Modal element:', modal);
-    if (modal) {
-        modal.style.display = 'flex';
-        console.log('Modal should be visible now');
+    const adminSection = document.getElementById('adminSection');
+    console.log('Admin section element:', adminSection);
+    if (adminSection) {
+        adminSection.style.display = 'block';
+        console.log('Admin section should be visible now');
     } else {
-        console.error('Admin modal not found!');
+        console.error('Admin section not found!');
     }
 }
 
 function hideAdminAccess() {
-    document.getElementById('adminModal').style.display = 'none';
+    document.getElementById('adminSection').style.display = 'none';
     document.getElementById('adminLoginForm').style.display = 'block';
     document.getElementById('adminPanel').style.display = 'none';
     document.getElementById('adminPassword').value = '';

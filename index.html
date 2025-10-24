@@ -29,6 +29,29 @@
                 <div class="header-actions">
                     <button onclick="showAdminAccess()" class="btn-admin-link">👥 Admin</button>
                 </div>
+                <div id="adminSection" style="display: none; background: white; padding: 20px; margin: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h2>🔐 Admin Access</h2>
+                    <div id="adminLoginForm">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Admin Password:</label>
+                            <input type="password" id="adminPassword" placeholder="Enter admin password" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+                        </div>
+                        <button onclick="checkAdminPassword()" style="width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Access Admin Panel</button>
+                    </div>
+                    <div id="adminPanel" style="display: none;">
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <a href="https://www.resellernumbers.com/user-management.html" style="background: #28a745; color: white; padding: 10px; border-radius: 5px; text-decoration: none; text-align: center;">
+                                👥 User Management
+                            </a>
+                            <a href="https://www.resellernumbers.com/" style="background: #17a2b8; color: white; padding: 10px; border-radius: 5px; text-decoration: none; text-align: center;">
+                                🏠 Main Application
+                            </a>
+                            <button onclick="logoutAdmin()" style="background: #dc3545; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">
+                                🚪 Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </header>
 
