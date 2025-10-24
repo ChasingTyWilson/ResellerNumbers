@@ -8360,8 +8360,6 @@ function showAdminAccess() {
     console.log('Modal element:', modal);
     if (modal) {
         modal.style.display = 'flex';
-        modal.style.backgroundColor = 'rgba(255, 0, 0, 0.8)'; // Bright red background for testing
-        modal.style.zIndex = '9999';
         console.log('Modal should be visible now');
     } else {
         console.error('Admin modal not found!');
