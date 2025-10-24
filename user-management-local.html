@@ -457,47 +457,44 @@
 
             async loadUsers() {
                 try {
-                    // First, let's check what tables exist
-                    console.log('Checking available tables...');
+                    console.log('Attempting to load users from profiles table...');
                     
-                    // Try to get users from auth.users (this should work)
-                    const { data: authUsers, error: authError } = await this.supabase.auth.admin.listUsers();
-                    
-                    if (authError) {
-                        console.log('Auth admin not available, trying alternative approach...');
+                    // Try to load from profiles table first
+                    const { data: profiles, error: profilesError } = await this.supabase
+                        .from('profiles')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (profilesError) {
+                        console.log('Profiles table error:', profilesError.message);
                         
-                        // Alternative: Create mock data for now
-                        this.users = [
-                            {
-                                id: 'demo-user-1',
-                                email: 'demo@example.com',
-                                full_name: 'Demo User',
-                                status: 'active',
-                                subscription_status: 'trial',
-                                created_at: new Date().toISOString(),
-                                last_sign_in_at: new Date().toISOString()
-                            }
-                        ];
-                        
-                        this.filteredUsers = [...this.users];
-                        this.updateStats();
-                        this.renderUsersTable();
-                        
-                        this.showError('Note: Using demo data. Supabase profiles table not found. You may need to create the profiles table in your Supabase dashboard.');
-                        return;
+                        if (profilesError.message.includes('relation "public.profiles" does not exist')) {
+                            // Profiles table doesn't exist - show demo data
+                            this.users = [
+                                {
+                                    id: 'demo-user-1',
+                                    email: 'demo@example.com',
+                                    full_name: 'Demo User',
+                                    status: 'active',
+                                    subscription_status: 'trial',
+                                    created_at: new Date().toISOString(),
+                                    last_sign_in_at: new Date().toISOString()
+                                }
+                            ];
+                            
+                            this.filteredUsers = [...this.users];
+                            this.updateStats();
+                            this.renderUsersTable();
+                            
+                            this.showError('Note: Using demo data. The profiles table does not exist in your Supabase database. Please run the setup-profiles-table.sql script in your Supabase SQL Editor to create the table.');
+                            return;
+                        } else {
+                            throw profilesError;
+                        }
                     }
 
-                    // Convert auth users to our format
-                    this.users = authUsers.users.map(user => ({
-                        id: user.id,
-                        email: user.email,
-                        full_name: user.user_metadata?.full_name || 'Unknown',
-                        status: 'active', // Default status
-                        subscription_status: 'trial', // Default subscription
-                        created_at: user.created_at,
-                        last_sign_in_at: user.last_sign_in_at
-                    }));
-                    
+                    // Successfully loaded from profiles table
+                    this.users = profiles || [];
                     this.filteredUsers = [...this.users];
                     
                     // Update stats
@@ -505,6 +502,8 @@
                     
                     // Render users table
                     this.renderUsersTable();
+                    
+                    console.log('Successfully loaded', this.users.length, 'users from profiles table');
                     
                 } catch (error) {
                     console.error('Error loading users:', error);
@@ -599,12 +598,19 @@
 
             async approveUser(userId) {
                 try {
+                    // Check if profiles table exists
                     const { error } = await this.supabase
                         .from('profiles')
                         .update({ status: 'active' })
                         .eq('id', userId);
 
-                    if (error) throw error;
+                    if (error) {
+                        if (error.message.includes('relation "public.profiles" does not exist')) {
+                            alert('Profiles table not found. Please run the setup-profiles-table.sql script in Supabase first.');
+                            return;
+                        }
+                        throw error;
+                    }
 
                     // Send welcome email
                     await this.sendWelcomeEmail(userId);
@@ -616,7 +622,7 @@
                     
                 } catch (error) {
                     console.error('Error approving user:', error);
-                    alert('Failed to approve user');
+                    alert('Failed to approve user: ' + error.message);
                 }
             }
 
@@ -629,7 +635,13 @@
                         .update({ status: 'suspended' })
                         .eq('id', userId);
 
-                    if (error) throw error;
+                    if (error) {
+                        if (error.message.includes('relation "public.profiles" does not exist')) {
+                            alert('Profiles table not found. Please run the setup-profiles-table.sql script in Supabase first.');
+                            return;
+                        }
+                        throw error;
+                    }
                     
                     // Reload users
                     await this.loadUsers();
@@ -638,7 +650,7 @@
                     
                 } catch (error) {
                     console.error('Error suspending user:', error);
-                    alert('Failed to suspend user');
+                    alert('Failed to suspend user: ' + error.message);
                 }
             }
 
