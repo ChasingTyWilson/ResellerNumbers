@@ -123,8 +123,8 @@ class ResellerNumbersAnalytics {
                 if (profile && profile.status === 'active') {
                     // User is logged in and approved with Supabase
                     console.log('✅ User logged in and approved with Supabase, showing app');
-                    this.showApp();
-                    return;
+                this.showApp();
+                return;
                 } else if (profile && profile.status === 'pending') {
                     console.log('⚠️ User account is pending approval');
                     alert('Your account is pending approval. Please wait for admin approval before accessing the platform.');
@@ -8351,4 +8351,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const analytics = new ResellerNumbersAnalytics();
     // Expose instance globally for onclick handlers
     window.appInstance = analytics;
+});
+
+// Admin Access Functions
+function showAdminAccess() {
+    document.getElementById('adminModal').style.display = 'flex';
+}
+
+function hideAdminAccess() {
+    document.getElementById('adminModal').style.display = 'none';
+    document.getElementById('adminLoginForm').style.display = 'block';
+    document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('adminPassword').value = '';
+}
+
+function checkAdminPassword() {
+    const password = document.getElementById('adminPassword').value;
+    const ADMIN_PASSWORD = 'reseller2024';
+    
+    if (password === ADMIN_PASSWORD) {
+        document.getElementById('adminLoginForm').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+    } else {
+        alert('Invalid admin password');
+    }
+}
+
+function logoutAdmin() {
+    hideAdminAccess();
+}
+
+// Allow Enter key to submit admin password
+document.addEventListener('DOMContentLoaded', function() {
+    const adminPasswordInput = document.getElementById('adminPassword');
+    if (adminPasswordInput) {
+        adminPasswordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAdminPassword();
+            }
+        });
+    }
 });
