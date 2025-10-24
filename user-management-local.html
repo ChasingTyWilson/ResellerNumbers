@@ -494,6 +494,7 @@
                     }
 
                     // Successfully loaded from profiles table
+                    console.log('Raw profiles data:', profiles);
                     this.users = profiles || [];
                     this.filteredUsers = [...this.users];
                     
@@ -504,6 +505,13 @@
                     this.renderUsersTable();
                     
                     console.log('Successfully loaded', this.users.length, 'users from profiles table');
+                    
+                    // Show debug info
+                    if (this.users.length === 0) {
+                        this.showError('No users found in profiles table. Please check if users were migrated correctly.');
+                    } else {
+                        this.showSuccess(`Found ${this.users.length} users in the database.`);
+                    }
                     
                 } catch (error) {
                     console.error('Error loading users:', error);
@@ -691,6 +699,14 @@
                 errorDiv.className = 'error';
                 errorDiv.textContent = message;
                 container.insertBefore(errorDiv, container.firstChild);
+            }
+
+            showSuccess(message) {
+                const container = document.querySelector('.container');
+                const successDiv = document.createElement('div');
+                successDiv.className = 'success';
+                successDiv.textContent = message;
+                container.insertBefore(successDiv, container.firstChild);
             }
         }
 
