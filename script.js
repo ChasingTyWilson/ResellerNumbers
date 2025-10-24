@@ -1638,7 +1638,8 @@ class ResellerNumbersAnalytics {
             return;
         }
 
-        this.showProgress();
+        // Hide old progress and show new progress bar
+        this.hideProgress();
         this.showInventoryProgress();
         
         try {
@@ -1674,7 +1675,7 @@ class ResellerNumbersAnalytics {
             console.error('Error processing file:', error);
             this.updateInventoryProgress(0, 'Error processing file', true);
             alert(`Error processing CSV file: ${error.message}. Please check that your CSV has the correct format with headers like "Item Title", "Current Price", etc.`);
-            this.hideProgress();
+            this.hideInventoryProgress();
         }
     }
 
@@ -1686,7 +1687,8 @@ class ResellerNumbersAnalytics {
             return;
         }
 
-        this.showSoldProgress();
+        // Hide old progress and show new progress bar
+        this.hideSoldProgress();
         this.showSoldProgressBar();
         
         try {
@@ -1717,8 +1719,9 @@ class ResellerNumbersAnalytics {
             setTimeout(() => this.hideSoldProgressBar(), 2000);
         } catch (error) {
             console.error('Error processing sold file:', error);
+            this.updateSoldProgress(0, 'Error processing file', true);
             alert(`Error processing sold listings CSV file: ${error.message}. Please check that your CSV has the correct format.`);
-            this.hideSoldProgress();
+            this.hideSoldProgressBar();
         }
     }
 
