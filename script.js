@@ -31,9 +31,11 @@ class ResellerNumbersAnalytics {
     }
 
     async initializeSupabase() {
+        console.log('🔧 Initializing Supabase...');
         // Wait a moment for Supabase config to load
         await new Promise(resolve => setTimeout(resolve, 100));
         
+        try {
         // Initialize Supabase service
         const initialized = await supabaseService.initialize();
         if (initialized) {
@@ -41,6 +43,11 @@ class ResellerNumbersAnalytics {
         } else {
             console.warn('⚠️ Supabase not configured - running in demo mode');
         }
+        } catch (error) {
+            console.error('❌ Error initializing Supabase:', error);
+            console.warn('⚠️ Falling back to demo mode');
+        }
+        
         // Always check auth status (works for both Supabase and demo mode)
         await this.checkAuthStatus();
     }
@@ -94,31 +101,50 @@ class ResellerNumbersAnalytics {
             });
         }
 
+        // Handle demo mode button
+        const demoModeBtn = document.getElementById('demoModeBtn');
+        if (demoModeBtn) {
+            demoModeBtn.addEventListener('click', async () => {
+                await this.handleDemoMode();
+            });
+        }
+
         // Mark listeners as setup
         this.authListenersSetup = true;
     }
 
     async checkAuthStatus() {
+        console.log('🔍 Checking auth status...');
         // Setup auth listeners first
         this.setupAuthListeners();
         
         // Check if using Supabase
         if (supabaseService && supabaseService.client) {
+            console.log('✅ Supabase client available, checking user...');
             const user = await supabaseService.getCurrentUser();
+            console.log('Current user:', user);
             if (user) {
                 // User is logged in with Supabase
+                console.log('✅ User logged in with Supabase, showing app');
                 this.showApp();
                 return;
             }
+        } else {
+            console.log('⚠️ Supabase not available, checking demo mode...');
         }
         
         // Fall back to localStorage check (demo mode)
         const authToken = localStorage.getItem('authToken');
         const userData = localStorage.getItem('userData');
         
+        console.log('Demo mode check - authToken:', !!authToken, 'userData:', !!userData);
+        
         if (authToken && userData) {
             // User is logged in with demo mode
+            console.log('✅ User logged in with demo mode, showing app');
             this.showApp();
+        } else {
+            console.log('❌ No authentication found, showing auth screen');
         }
         // Otherwise, auth screen is already visible by default
     }
@@ -135,6 +161,7 @@ class ResellerNumbersAnalytics {
 
         // Check if using Supabase
         if (supabaseService && supabaseService.client) {
+            try {
             const result = await supabaseService.signIn(email, password);
             
             if (result.success) {
@@ -143,6 +170,10 @@ class ResellerNumbersAnalytics {
                 this.showApp();
             } else {
                 alert('❌ Login failed: ' + result.error);
+                }
+            } catch (error) {
+                console.error('❌ Supabase login error:', error);
+                alert('❌ Login failed: ' + error.message);
             }
         } else {
             // Demo mode fallback
@@ -234,6 +265,26 @@ class ResellerNumbersAnalytics {
         }
     }
 
+    async handleDemoMode() {
+        console.log('🎮 Starting demo mode...');
+        
+        // Create demo user data
+        const mockAuthToken = 'demo_token_' + Date.now();
+        const mockUserData = {
+            email: 'demo@resellernumbers.com',
+            name: 'Demo User',
+            subscriptionStatus: 'trial',
+            trialEndDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+        };
+
+        // Store in localStorage
+        localStorage.setItem('authToken', mockAuthToken);
+        localStorage.setItem('userData', JSON.stringify(mockUserData));
+
+        alert('✅ Welcome to Demo Mode! You can explore all features with sample data.');
+        this.showApp();
+    }
+
     async loadUserData() {
         // Load user data from Supabase if available
         if (supabaseService && supabaseService.client) {
@@ -276,12 +327,17 @@ class ResellerNumbersAnalytics {
     }
 
     showApp() {
+        console.log('🎯 showApp() called');
         // Hide auth screen
         if (this.authScreen) {
+            console.log('Hiding auth screen');
             this.authScreen.style.display = 'none';
+        } else {
+            console.log('⚠️ Auth screen element not found');
         }
 
         // Show platform selector
+        console.log('Showing platform selector');
         this.showPlatformSelector();
     }
 
