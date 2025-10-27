@@ -728,6 +728,7 @@ class ResellerNumbersAnalytics {
         this.monthlyAvgDaily = document.getElementById('monthlyAvgDaily');
         this.monthlyBestDay = document.getElementById('monthlyBestDay');
         this.monthlyDailyChart = document.getElementById('monthlyDailyChart');
+        this.monthlyDailyPerformanceChart = document.getElementById('monthlyDailyPerformanceChart');
         this.monthlyTopItemsBody = document.getElementById('monthlyTopItemsBody');
         
         // Weekly detail elements
@@ -1100,6 +1101,20 @@ class ResellerNumbersAnalytics {
         if (this.backToAnnualFromWeekBtn) {
             this.backToAnnualFromWeekBtn.addEventListener('click', () => this.showAnnualReviewMain());
         }
+        
+        // Browser back button warning
+        window.addEventListener('popstate', (event) => {
+            if (this.soldData.length > 0 || this.inventoryData.length > 0) {
+                const confirmed = confirm('Are you sure you want to leave? You will lose your eBay data from this session.');
+                if (!confirmed) {
+                    event.preventDefault();
+                    window.history.pushState(null, null, window.location.href);
+                }
+            }
+        });
+        
+        // Push initial state to history
+        window.history.pushState(null, null, window.location.href);
     }
 
     handleDragOver(e, area) {
@@ -1308,7 +1323,7 @@ class ResellerNumbersAnalytics {
                 errorStack: error.stack
             });
             
-            this.showFileStatus(type, 'warning', `${data.length} items loaded (sync error, using session only)`);
+            this.showFileStatus(type, 'warning', `Not Storing Data, will be User Session only. Proceed as normal`);
             
             // Update progress bar to show error but continue
             if (type === 'inventory') {
@@ -5222,10 +5237,45 @@ ${data.recommendations.listingOptimizations.map(rec =>
             
             localStorage.setItem('ebay_collections', JSON.stringify(this.collections));
             console.log('Saved collection:', collectionData.name);
+            
+            // Also save to Supabase if available
+            if (supabaseService && supabaseService.client) {
+                this.saveCollectionToSupabase(collectionData, existingIndex >= 0);
+            }
+            
             return true;
         } catch (error) {
             console.error('Error saving collection:', error);
             return false;
+        }
+    }
+    
+    async saveCollectionToSupabase(collectionData, isUpdate) {
+        try {
+            if (isUpdate) {
+                // Find the collection ID
+                const existingCollection = this.collections.find(c => c.sku === collectionData.sku);
+                if (existingCollection && existingCollection.id) {
+                    await supabaseService.updateCollection(existingCollection.id, collectionData);
+                }
+            } else {
+                await supabaseService.saveCollection(collectionData);
+                // Reload collections from Supabase to get the ID
+                const collections = await supabaseService.getCollections();
+                if (collections) {
+                    this.collections = collections.map(c => ({
+                        name: c.name,
+                        sku: c.sku,
+                        purchaseDate: c.purchase_date,
+                        cost: c.cost,
+                        notes: c.notes,
+                        id: c.id
+                    }));
+                    localStorage.setItem('ebay_collections', JSON.stringify(this.collections));
+                }
+            }
+        } catch (error) {
+            console.error('Error saving collection to Supabase:', error);
         }
     }
     
@@ -5246,10 +5296,24 @@ ${data.recommendations.listingOptimizations.map(rec =>
             this.businessMetrics = { ...this.businessMetrics, ...metrics };
             localStorage.setItem('ebay_business_metrics', JSON.stringify(this.businessMetrics));
             console.log('Saved business metrics');
+            
+            // Also save to Supabase if available
+            if (supabaseService && supabaseService.client) {
+                this.saveBusinessMetricsToSupabase(metrics);
+            }
+            
             return true;
         } catch (error) {
             console.error('Error saving business metrics:', error);
             return false;
+        }
+    }
+    
+    async saveBusinessMetricsToSupabase(metrics) {
+        try {
+            await supabaseService.saveBusinessMetrics(metrics);
+        } catch (error) {
+            console.error('Error saving business metrics to Supabase:', error);
         }
     }
     
@@ -5798,6 +5862,110 @@ ${data.recommendations.listingOptimizations.map(rec =>
                             callback: function(value) {
                                 return '$' + value.toLocaleString();
                             }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Also create the daily performance chart with color coding
+        this.createMonthlyDailyPerformanceChart(monthData);
+    }
+    
+    createMonthlyDailyPerformanceChart(monthData) {
+        if (!this.monthlyDailyPerformanceChart) return;
+        
+        // Group sales by day
+        const dailyMap = {};
+        
+        monthData.items.forEach(item => {
+            const date = item.date;
+            if (!dailyMap[date]) {
+                dailyMap[date] = 0;
+            }
+            dailyMap[date] += item.price;
+        });
+        
+        // Sort by date
+        const sortedDays = Object.keys(dailyMap).sort((a, b) => {
+            const dateA = this.parseSoldDate(a);
+            const dateB = this.parseSoldDate(b);
+            return dateA - dateB;
+        });
+        
+        const dailyValues = sortedDays.map(day => dailyMap[day]);
+        
+        // Calculate percentiles
+        const sortedValues = [...dailyValues].sort((a, b) => a - b);
+        const count = sortedValues.length;
+        const top10Threshold = sortedValues[Math.floor(count * 0.9)] || 0;
+        const bottom10Threshold = sortedValues[Math.floor(count * 0.1)] || 0;
+        
+        // Create color array based on performance
+        const backgroundColors = dailyValues.map(value => {
+            if (value >= top10Threshold) {
+                return 'rgba(34, 197, 94, 0.8)'; // Green for top 10%
+            } else if (value <= bottom10Threshold) {
+                return 'rgba(239, 68, 68, 0.8)'; // Red for bottom 10%
+            } else {
+                return 'rgba(234, 179, 8, 0.8)'; // Yellow for middle 80%
+            }
+        });
+        
+        // Destroy existing chart if it exists
+        if (this.monthlyDailyPerformanceChartInstance) {
+            this.monthlyDailyPerformanceChartInstance.destroy();
+        }
+        
+        this.monthlyDailyPerformanceChartInstance = new Chart(this.monthlyDailyPerformanceChart, {
+            type: 'bar',
+            data: {
+                labels: sortedDays,
+                datasets: [{
+                    label: 'Daily Sales',
+                    data: dailyValues,
+                    backgroundColor: backgroundColors,
+                    borderColor: backgroundColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const value = context.parsed.y;
+                                let performance = '';
+                                if (value >= top10Threshold) {
+                                    performance = ' (Top 10%)';
+                                } else if (value <= bottom10Threshold) {
+                                    performance = ' (Bottom 10%)';
+                                } else {
+                                    performance = ' (Middle 80%)';
+                                }
+                                return `$${value.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}${performance}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
                         }
                     }
                 }
@@ -8353,63 +8521,4 @@ document.addEventListener('DOMContentLoaded', () => {
     window.appInstance = analytics;
 });
 
-// Admin Access Functions
-function showAdminAccess() {
-    console.log('showAdminAccess called');
-    const adminSection = document.getElementById('adminSection');
-    console.log('Admin section element:', adminSection);
-    if (adminSection) {
-        adminSection.style.display = 'block';
-        console.log('Admin section should be visible now');
-    } else {
-        console.error('Admin section not found!');
-    }
-}
 
-function hideAdminAccess() {
-    document.getElementById('adminSection').style.display = 'none';
-    document.getElementById('adminLoginForm').style.display = 'block';
-    document.getElementById('adminPanel').style.display = 'none';
-    document.getElementById('adminPassword').value = '';
-}
-
-function checkAdminPassword() {
-    const password = document.getElementById('adminPassword').value;
-    const ADMIN_PASSWORD = 'reseller2024';
-    
-    if (password === ADMIN_PASSWORD) {
-        document.getElementById('adminLoginForm').style.display = 'none';
-        document.getElementById('adminPanel').style.display = 'block';
-    } else {
-        alert('Invalid admin password');
-    }
-}
-
-function logoutAdmin() {
-    hideAdminAccess();
-}
-
-// Allow Enter key to submit admin password
-document.addEventListener('DOMContentLoaded', function() {
-    const adminPasswordInput = document.getElementById('adminPassword');
-    if (adminPasswordInput) {
-        adminPasswordInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                checkAdminPassword();
-            }
-        });
-    }
-    
-    // Test if admin button exists
-    const adminButton = document.querySelector('.btn-admin-link');
-    if (adminButton) {
-        console.log('Admin button found:', adminButton);
-        adminButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log('Admin button clicked');
-            showAdminAccess();
-        });
-    } else {
-        console.log('Admin button not found');
-    }
-});
