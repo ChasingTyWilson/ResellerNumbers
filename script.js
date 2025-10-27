@@ -801,6 +801,7 @@ class ResellerNumbersAnalytics {
         this.execTabContents = document.querySelectorAll('.exec-tab-content');
         this.monthsGrid = document.getElementById('monthsGrid');
         this.weeklyBarChart = document.getElementById('weeklyBarChart');
+        this.annualDailyPerformanceChart = document.getElementById('annualDailyPerformanceChart');
         this.annualReviewMain = document.getElementById('annualReviewMain');
         this.monthlyDetailView = document.getElementById('monthlyDetailView');
         this.weeklyDetailView = document.getElementById('weeklyDetailView');
@@ -830,6 +831,7 @@ class ResellerNumbersAnalytics {
         this.monthlyData = [];
         this.weeklyData = [];
         this.weeklyBarChartInstance = null;
+        this.annualDailyPerformanceChartInstance = null;
         
         // Current snapshot elements (enhanced)
         this.currentMonthDate = document.getElementById('currentMonthDate');
@@ -5859,6 +5861,156 @@ ${data.recommendations.listingOptimizations.map(rec =>
                         ticks: {
                             maxRotation: 90,
                             minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Also create the annual daily performance chart
+        this.createAnnualDailyPerformanceChart();
+    }
+    
+    createAnnualDailyPerformanceChart() {
+        if (!this.annualDailyPerformanceChart) return;
+        
+        // Get all sold items across all months
+        const allItems = [];
+        this.monthlyData.forEach(month => {
+            allItems.push(...month.items);
+        });
+        
+        if (allItems.length === 0) return;
+        
+        // Group sales by day across all months
+        const dailyMap = {};
+        
+        allItems.forEach(item => {
+            const date = item.date;
+            if (!dailyMap[date]) {
+                dailyMap[date] = 0;
+            }
+            dailyMap[date] += item.price;
+        });
+        
+        // Sort by date
+        const sortedDays = Object.keys(dailyMap).sort((a, b) => {
+            const dateA = this.parseSoldDate(a);
+            const dateB = this.parseSoldDate(b);
+            return dateA - dateB;
+        });
+        
+        const dailyValues = sortedDays.map(day => dailyMap[day]);
+        
+        // Calculate percentiles
+        const sortedValues = [...dailyValues].sort((a, b) => a - b);
+        const count = sortedValues.length;
+        const top10Threshold = sortedValues[Math.floor(count * 0.9)] || 0;
+        const bottom10Threshold = sortedValues[Math.floor(count * 0.1)] || 0;
+        
+        // Create segmented datasets for line chart with different colors
+        const top10Data = dailyValues.map((value, index) => value >= top10Threshold ? value : null);
+        const middle80Data = dailyValues.map((value, index) => 
+            (value > bottom10Threshold && value < top10Threshold) ? value : null);
+        const bottom10Data = dailyValues.map((value, index) => value <= bottom10Threshold ? value : null);
+        
+        // Destroy existing chart if it exists
+        if (this.annualDailyPerformanceChartInstance) {
+            this.annualDailyPerformanceChartInstance.destroy();
+        }
+        
+        this.annualDailyPerformanceChartInstance = new Chart(this.annualDailyPerformanceChart, {
+            type: 'line',
+            data: {
+                labels: sortedDays,
+                datasets: [
+                    {
+                        label: 'Top 10% Days',
+                        data: top10Data,
+                        borderColor: 'rgba(34, 197, 94, 1)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 2,
+                        pointHoverRadius: 4,
+                        tension: 0.4,
+                        spanGaps: true
+                    },
+                    {
+                        label: 'Middle 80% Days',
+                        data: middle80Data,
+                        borderColor: 'rgba(234, 179, 8, 1)',
+                        backgroundColor: 'rgba(234, 179, 8, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 2,
+                        pointHoverRadius: 4,
+                        tension: 0.4,
+                        spanGaps: true
+                    },
+                    {
+                        label: 'Bottom 10% Days',
+                        data: bottom10Data,
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 2,
+                        pointHoverRadius: 4,
+                        tension: 0.4,
+                        spanGaps: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: {
+                                size: 12,
+                                weight: '600'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const value = context.parsed.y;
+                                let performance = '';
+                                if (context.datasetIndex === 0) {
+                                    performance = ' (Top 10%)';
+                                } else if (context.datasetIndex === 1) {
+                                    performance = ' (Middle 80%)';
+                                } else {
+                                    performance = ' (Bottom 10%)';
+                                }
+                                return `$${value.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}${performance}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        },
+                        grid: {
+                            display: false
                         }
                     }
                 }
