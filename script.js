@@ -455,16 +455,39 @@ class ResellerNumbersAnalytics {
     }
     
     checkAndDisplayPreloadedData() {
+        // Check if we have data loaded from database
+        const hasSoldData = this.soldData && this.soldData.length > 0;
+        const hasInventoryData = this.inventoryData && this.inventoryData.length > 0;
+        const hasAnyData = hasSoldData || hasInventoryData;
+        
+        // Show banner if we have saved data
+        if (hasAnyData) {
+            const banner = document.getElementById('loadedDataBanner');
+            const summaryText = document.getElementById('loadedDataSummary');
+            
+            if (banner) {
+                banner.style.display = 'block';
+                
+                // Update summary text
+                if (summaryText) {
+                    const parts = [];
+                    if (hasSoldData) parts.push(`${this.soldData.length} sales`);
+                    if (hasInventoryData) parts.push(`${this.inventoryData.length} inventory items`);
+                    summaryText.textContent = `You have ${parts.join(' and ')} ready to analyze.`;
+                }
+            }
+        }
+        
         // Show status if we have data loaded from database
-        if (this.soldData && this.soldData.length > 0) {
+        if (hasSoldData) {
             this.showFileStatus('sold', 'success', `${this.soldData.length} historical sales loaded from database`);
         }
-        if (this.inventoryData && this.inventoryData.length > 0) {
+        if (hasInventoryData) {
             this.showFileStatus('inventory', 'success', `${this.inventoryData.length} inventory items loaded from database`);
         }
         
         // Enable analyze button if we have any data
-        if (this.soldData.length > 0 || this.inventoryData.length > 0) {
+        if (hasAnyData) {
             if (this.analyzeBtn) {
                 this.analyzeBtn.disabled = false;
                 this.analyzeBtn.textContent = '🚀 Generate Business Analytics';
@@ -948,6 +971,12 @@ class ResellerNumbersAnalytics {
         }
         if (this.loadSampleDataBtn) {
             this.loadSampleDataBtn.addEventListener('click', () => this.loadSampleData());
+        }
+        
+        // Proceed with loaded data button
+        const proceedWithDataBtn = document.getElementById('proceedWithDataBtn');
+        if (proceedWithDataBtn) {
+            proceedWithDataBtn.addEventListener('click', () => this.generateAnalytics());
         }
 
         // Navigation buttons
