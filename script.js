@@ -802,6 +802,7 @@ class ResellerNumbersAnalytics {
         this.monthsGrid = document.getElementById('monthsGrid');
         this.weeklyBarChart = document.getElementById('weeklyBarChart');
         this.annualDailyPerformanceChart = document.getElementById('annualDailyPerformanceChart');
+        this.mainDailySalesChart = document.getElementById('mainDailySalesChart');
         this.annualReviewMain = document.getElementById('annualReviewMain');
         this.monthlyDetailView = document.getElementById('monthlyDetailView');
         this.weeklyDetailView = document.getElementById('weeklyDetailView');
@@ -832,6 +833,7 @@ class ResellerNumbersAnalytics {
         this.weeklyData = [];
         this.weeklyBarChartInstance = null;
         this.annualDailyPerformanceChartInstance = null;
+        this.mainDailySalesChartInstance = null;
         
         // Current snapshot elements (enhanced)
         this.currentMonthDate = document.getElementById('currentMonthDate');
@@ -5869,6 +5871,111 @@ ${data.recommendations.listingOptimizations.map(rec =>
         
         // Also create the annual daily performance chart
         this.createAnnualDailyPerformanceChart();
+        
+        // Create the main daily sales chart
+        this.createMainDailySalesChart();
+    }
+    
+    createMainDailySalesChart() {
+        if (!this.mainDailySalesChart) return;
+        
+        // Get all sold items across all months
+        const allItems = [];
+        this.monthlyData.forEach(month => {
+            allItems.push(...month.items);
+        });
+        
+        if (allItems.length === 0) return;
+        
+        // Group sales by day across all months
+        const dailyMap = {};
+        
+        allItems.forEach(item => {
+            const date = item.date;
+            if (!dailyMap[date]) {
+                dailyMap[date] = 0;
+            }
+            dailyMap[date] += item.price;
+        });
+        
+        // Sort by date
+        const sortedDays = Object.keys(dailyMap).sort((a, b) => {
+            const dateA = this.parseSoldDate(a);
+            const dateB = this.parseSoldDate(b);
+            return dateA - dateB;
+        });
+        
+        const dailyValues = sortedDays.map(day => dailyMap[day]);
+        
+        // Destroy existing chart if it exists
+        if (this.mainDailySalesChartInstance) {
+            this.mainDailySalesChartInstance.destroy();
+        }
+        
+        this.mainDailySalesChartInstance = new Chart(this.mainDailySalesChart, {
+            type: 'line',
+            data: {
+                labels: sortedDays,
+                datasets: [{
+                    label: 'Daily Sales',
+                    data: dailyValues,
+                    borderColor: 'rgba(124, 58, 237, 1)',
+                    backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: {
+                                size: 12,
+                                weight: '600'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                return `$${context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
     }
     
     createAnnualDailyPerformanceChart() {
