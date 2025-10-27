@@ -1330,7 +1330,10 @@ class ResellerNumbersAnalytics {
             })();
             
             const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Sync timeout - operation took too long')), 30000); // 30 second timeout
+                // Increase timeout for large files (calculate based on file size)
+                const timeoutDuration = Math.max(60000, data.length * 100); // At least 60 seconds, or 100ms per item
+                console.log(`⏱️ Sync timeout set to ${timeoutDuration/1000}s for ${data.length} items`);
+                setTimeout(() => reject(new Error(`Sync timeout after ${timeoutDuration/1000}s - file too large`)), timeoutDuration);
             });
             
             result = await Promise.race([syncPromise, timeoutPromise]);
@@ -1354,13 +1357,12 @@ class ResellerNumbersAnalytics {
                     this.showFileStatus(type, 'success', `${data.length} unsold loaded | ${stats.newUnsold} new`);
                 }
 
-                // Show detailed summary in console
-                console.log(summaryMessage);
-                
                 // Show errors if any
                 if (stats.errors && stats.errors.length > 0) {
                     console.warn(`⚠️ ${stats.errors.length} items had errors:`, stats.errors);
                 }
+                
+                console.log(`✅ Sync successful:`, stats);
             } else {
                 console.error('Sync failed:', result);
                 if (type === 'inventory') {
@@ -1368,6 +1370,7 @@ class ResellerNumbersAnalytics {
                 } else if (type === 'sold') {
                     this.updateSoldProgress(0, 'Sync failed', true);
                 }
+                this.showFileStatus(type, 'warning', `${data.length} items loaded (sync failed - check console for details)`);
             }
 
             // Update sync status display

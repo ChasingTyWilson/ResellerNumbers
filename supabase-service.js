@@ -408,6 +408,8 @@ class SupabaseService {
         try {
             if (!this.currentUser) throw new Error('User not authenticated');
             
+            console.log(`🔄 Processing ${inventoryArray.length} inventory items in batches...`);
+            
             const stats = {
                 newItems: 0,
                 updatedItems: 0,
@@ -415,7 +417,13 @@ class SupabaseService {
                 errors: []
             };
 
-            for (const item of inventoryArray) {
+            // Process in batches of 50 for better performance
+            const batchSize = 50;
+            for (let i = 0; i < inventoryArray.length; i += batchSize) {
+                const batch = inventoryArray.slice(i, i + batchSize);
+                console.log(`Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(inventoryArray.length/batchSize)} (${batch.length} items)`);
+                
+                for (const item of batch) {
                 try {
                     // Normalize item title for comparison
                     const normalizedTitle = (item['Item Title'] || item.title || '').trim();
@@ -499,6 +507,12 @@ class SupabaseService {
                 } catch (itemError) {
                     console.error('Error processing item:', itemError);
                     stats.errors.push({ item: item['Item Title'] || 'Unknown', error: itemError.message });
+                }
+                }
+                
+                // Small delay between batches to prevent overwhelming the database
+                if (i + batchSize < inventoryArray.length) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
                 }
             }
 
