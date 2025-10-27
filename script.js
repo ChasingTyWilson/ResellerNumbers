@@ -267,6 +267,8 @@ class ResellerNumbersAnalytics {
     async loadUserData() {
         // Load user data from Supabase if available
         if (supabaseService && supabaseService.client) {
+            console.log('📥 Loading user data from Supabase...');
+            
             // Load business metrics
             const metrics = await supabaseService.getBusinessMetrics();
             if (metrics) {
@@ -276,6 +278,7 @@ class ResellerNumbersAnalytics {
                     avgFeePercent: metrics.avg_fee_percent || 0,
                     taxBracket: metrics.tax_bracket || 0
                 };
+                console.log('✅ Loaded business metrics');
             }
 
             // Load collections
@@ -289,19 +292,53 @@ class ResellerNumbersAnalytics {
                     notes: c.notes,
                     id: c.id
                 }));
+                console.log(`✅ Loaded ${this.collections.length} collections`);
             }
 
-            // Load latest inventory data
-            const inventoryData = await supabaseService.getLatestInventoryData();
-            if (inventoryData) {
-                this.storedInventoryData = inventoryData.data;
+            // Load ALL historical sold data from Supabase
+            const salesHistory = await supabaseService.getSalesHistory(5000); // Get up to 5000 sales
+            if (salesHistory && salesHistory.length > 0) {
+                // Convert database format back to CSV-like format
+                this.storedSoldData = salesHistory.map(sale => ({
+                    'Item Title': sale.item_title,
+                    'Sold Price': sale.sold_price.toString(),
+                    'Sold For': sale.sold_price.toString(),
+                    'Sale Date': sale.sold_date,
+                    'Sold Date': sale.sold_date,
+                    'Quantity': sale.quantity.toString(),
+                    'Buyer Username': sale.buyer_username || '',
+                    'Buyer': sale.buyer_username || '',
+                    'Listing ID': sale.listing_id || '',
+                    'Buyer State': sale.buyer_state || '',
+                    'Fees': sale.fees?.toString() || '0',
+                    'Shipping': sale.shipping_cost?.toString() || '0'
+                }));
+                this.soldData = this.storedSoldData;
+                console.log(`✅ Loaded ${this.storedSoldData.length} historical sales from database`);
             }
 
-            // Load latest sold data
-            const soldData = await supabaseService.getLatestSoldData();
-            if (soldData) {
-                this.storedSoldData = soldData.data;
+            // Load ALL historical inventory data
+            const inventoryHistory = await supabaseService.getInventoryHistory('active', 5000); // Get up to 5000 active items
+            if (inventoryHistory && inventoryHistory.length > 0) {
+                // Convert database format back to CSV-like format
+                this.storedInventoryData = inventoryHistory.map(item => ({
+                    'Item Title': item.item_title,
+                    'Current Price': item.current_price.toString(),
+                    'Current price': item.current_price.toString(),
+                    'Quantity': item.quantity.toString(),
+                    'Available qua': item.quantity.toString(),
+                    'Days Listed': item.days_listed.toString(),
+                    'Views': item.views.toString(),
+                    'Watchers': item.watchers.toString(),
+                    'Listing ID': item.listing_id || '',
+                    'Category': item.category || '',
+                    'Condition': item.condition || ''
+                }));
+                this.inventoryData = this.storedInventoryData;
+                console.log(`✅ Loaded ${this.storedInventoryData.length} active inventory items from database`);
             }
+
+            console.log('✅ User data loading complete');
         }
     }
 
@@ -405,8 +442,29 @@ class ResellerNumbersAnalytics {
             this.landingPage.style.display = 'block';
         }
 
+        // Check if we have pre-loaded data and show it
+        this.checkAndDisplayPreloadedData();
+
         // Update header with user info
         this.updateHeaderWithUserInfo();
+    }
+    
+    checkAndDisplayPreloadedData() {
+        // Show status if we have data loaded from database
+        if (this.soldData && this.soldData.length > 0) {
+            this.showFileStatus('sold', 'success', `${this.soldData.length} historical sales loaded from database`);
+        }
+        if (this.inventoryData && this.inventoryData.length > 0) {
+            this.showFileStatus('inventory', 'success', `${this.inventoryData.length} inventory items loaded from database`);
+        }
+        
+        // Enable analyze button if we have any data
+        if (this.soldData.length > 0 || this.inventoryData.length > 0) {
+            if (this.analyzeBtn) {
+                this.analyzeBtn.disabled = false;
+                this.analyzeBtn.textContent = '🚀 Generate Business Analytics';
+            }
+        }
     }
 
     async updateUserEmailDisplay() {
@@ -1323,7 +1381,7 @@ class ResellerNumbersAnalytics {
                 errorStack: error.stack
             });
             
-            this.showFileStatus(type, 'warning', `Not Storing Data, will be User Session only. Proceed as normal`);
+            this.showFileStatus(type, 'warning', `${data.length} items loaded (sync failed - data saved for session only)`);
             
             // Update progress bar to show error but continue
             if (type === 'inventory') {
