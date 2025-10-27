@@ -5085,7 +5085,7 @@ ${data.recommendations.listingOptimizations.map(rec =>
         }
     }
     
-    handleBusinessMetricsSubmit() {
+    async handleBusinessMetricsSubmit() {
         const metrics = {
             minutesPerItem: parseFloat(document.getElementById('minutesPerItem').value) || 0,
             idealHourlyRate: parseFloat(document.getElementById('idealHourlyRate').value) || 0,
@@ -5093,7 +5093,8 @@ ${data.recommendations.listingOptimizations.map(rec =>
             taxBracket: parseFloat(document.getElementById('taxBracket').value) || 0
         };
         
-        if (this.saveBusinessMetrics(metrics)) {
+        const saved = await this.saveBusinessMetrics(metrics);
+        if (saved) {
             alert('✅ Business settings saved successfully!');
             this.updateBusinessSettingsDisplay();
         } else {
@@ -5307,26 +5308,36 @@ ${data.recommendations.listingOptimizations.map(rec =>
                 // Find the collection ID
                 const existingCollection = this.collections.find(c => c.sku === collectionData.sku);
                 if (existingCollection && existingCollection.id) {
-                    await supabaseService.updateCollection(existingCollection.id, collectionData);
+                    const result = await supabaseService.updateCollection(existingCollection.id, collectionData);
+                    if (result && result.success) {
+                        console.log('✅ Collection updated in Supabase');
+                    } else {
+                        console.error('❌ Failed to update collection in Supabase:', result);
+                    }
                 }
             } else {
-                await supabaseService.saveCollection(collectionData);
-                // Reload collections from Supabase to get the ID
-                const collections = await supabaseService.getCollections();
-                if (collections) {
-                    this.collections = collections.map(c => ({
-                        name: c.name,
-                        sku: c.sku,
-                        purchaseDate: c.purchase_date,
-                        cost: c.cost,
-                        notes: c.notes,
-                        id: c.id
-                    }));
-                    // Don't save to localStorage - Supabase is the source of truth
+                const result = await supabaseService.saveCollection(collectionData);
+                if (result && result.success) {
+                    console.log('✅ Collection saved to Supabase');
+                    // Reload collections from Supabase to get the ID
+                    const collections = await supabaseService.getCollections();
+                    if (collections) {
+                        this.collections = collections.map(c => ({
+                            name: c.name,
+                            sku: c.sku,
+                            purchaseDate: c.purchase_date,
+                            cost: c.cost,
+                            notes: c.notes,
+                            id: c.id
+                        }));
+                        // Don't save to localStorage - Supabase is the source of truth
+                    }
+                } else {
+                    console.error('❌ Failed to save collection to Supabase:', result);
                 }
             }
         } catch (error) {
-            console.error('Error saving collection to Supabase:', error);
+            console.error('❌ Error saving collection to Supabase:', error);
         }
     }
     
@@ -5359,14 +5370,21 @@ ${data.recommendations.listingOptimizations.map(rec =>
         }
     }
     
-    saveBusinessMetrics(metrics) {
+    async saveBusinessMetrics(metrics) {
         try {
             this.businessMetrics = { ...this.businessMetrics, ...metrics };
-            console.log('Saved business metrics');
+            console.log('💾 Saving business metrics:', metrics);
             
             // Save to Supabase if available (primary storage)
             if (supabaseService && supabaseService.client) {
-                this.saveBusinessMetricsToSupabase(metrics);
+                const result = await this.saveBusinessMetricsToSupabase(metrics);
+                if (result && result.success) {
+                    console.log('✅ Business metrics saved to Supabase');
+                } else {
+                    console.error('❌ Failed to save business metrics to Supabase:', result);
+                    // Fallback to localStorage if Supabase fails
+                    localStorage.setItem('ebay_business_metrics', JSON.stringify(this.businessMetrics));
+                }
             } else {
                 // Fallback to localStorage only if Supabase is not available
                 localStorage.setItem('ebay_business_metrics', JSON.stringify(this.businessMetrics));
@@ -5375,16 +5393,19 @@ ${data.recommendations.listingOptimizations.map(rec =>
             
             return true;
         } catch (error) {
-            console.error('Error saving business metrics:', error);
+            console.error('❌ Error saving business metrics:', error);
             return false;
         }
     }
     
     async saveBusinessMetricsToSupabase(metrics) {
         try {
-            await supabaseService.saveBusinessMetrics(metrics);
+            const result = await supabaseService.saveBusinessMetrics(metrics);
+            console.log('📊 Supabase save result:', result);
+            return result;
         } catch (error) {
-            console.error('Error saving business metrics to Supabase:', error);
+            console.error('❌ Error saving business metrics to Supabase:', error);
+            return { success: false, error: error.message };
         }
     }
     

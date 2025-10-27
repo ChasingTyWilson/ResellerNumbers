@@ -151,13 +151,17 @@ class SupabaseService {
                     minutes_per_item: metrics.minutesPerItem || 0,
                     ideal_hourly_rate: metrics.idealHourlyRate || 0,
                     avg_fee_percent: metrics.avgFeePercent || 0,
-                    tax_bracket: metrics.taxBracket || 0
+                    tax_bracket: metrics.taxBracket || 0,
+                    updated_at: new Date().toISOString()
+                }, {
+                    onConflict: 'user_id'
                 });
 
             if (error) throw error;
+            console.log('✅ Business metrics saved to database:', data);
             return { success: true, data };
         } catch (error) {
-            console.error('Save business metrics error:', error);
+            console.error('❌ Save business metrics error:', error);
             return { success: false, error: error.message };
         }
     }
@@ -188,6 +192,7 @@ class SupabaseService {
         try {
             if (!this.currentUser) throw new Error('User not authenticated');
 
+            console.log('💾 Saving collection to database:', collection);
             const { data, error } = await this.client
                 .from('collections')
                 .insert({
@@ -202,9 +207,10 @@ class SupabaseService {
                 .single();
 
             if (error) throw error;
+            console.log('✅ Collection saved to database:', data);
             return { success: true, data };
         } catch (error) {
-            console.error('Save collection error:', error);
+            console.error('❌ Save collection error:', error);
             return { success: false, error: error.message };
         }
     }
@@ -231,6 +237,7 @@ class SupabaseService {
         try {
             if (!this.currentUser) throw new Error('User not authenticated');
 
+            console.log('💾 Updating collection in database:', id, collection);
             const { data, error } = await this.client
                 .from('collections')
                 .update({
@@ -238,7 +245,8 @@ class SupabaseService {
                     sku: collection.sku,
                     purchase_date: collection.purchaseDate,
                     cost: collection.cost,
-                    notes: collection.notes || null
+                    notes: collection.notes || null,
+                    updated_at: new Date().toISOString()
                 })
                 .eq('id', id)
                 .eq('user_id', this.currentUser.id)
@@ -246,9 +254,10 @@ class SupabaseService {
                 .single();
 
             if (error) throw error;
+            console.log('✅ Collection updated in database:', data);
             return { success: true, data };
         } catch (error) {
-            console.error('Update collection error:', error);
+            console.error('❌ Update collection error:', error);
             return { success: false, error: error.message };
         }
     }
