@@ -238,9 +238,14 @@ class ResellerNumbersAnalytics {
             console.log('Signup result:', result);
             
             if (result.success) {
-                alert('✅ Account created successfully! Your account is pending approval. You will receive an email once approved.');
-                // Don't auto-login pending users
-                alert('Please wait for approval before accessing your account.');
+                alert('✅ Account created successfully! Your account is pending approval. You will receive an email once approved.\n\nPlease wait for approval before accessing your account.');
+                
+                // Clear the form
+                document.getElementById('signupFormElement').reset();
+                
+                // Show login form instead
+                this.signupFormWrapper.style.display = 'none';
+                this.loginFormWrapper.style.display = 'block';
             } else {
                 alert('❌ Signup failed: ' + result.error);
             }
