@@ -565,8 +565,8 @@ class SupabaseService {
                 errors: []
             };
 
-            // Process in batches of 100 to avoid timeout
-            const batchSize = 100;
+            // Process in batches of 500 for better performance
+            const batchSize = 500;
             const batches = [];
             for (let i = 0; i < salesArray.length; i += batchSize) {
                 batches.push(salesArray.slice(i, i + batchSize));
@@ -576,61 +576,59 @@ class SupabaseService {
                 const batch = batches[batchIndex];
                 console.log(`Processing batch ${batchIndex + 1}/${batches.length} (${batch.length} items)`);
                 
-                for (const sale of batch) {
-                    try {
-                    const normalizedTitle = (sale['Item Title'] || sale['Title'] || sale.title || '').trim();
-                    if (!normalizedTitle) continue;
+                // Prepare all items for bulk insert
+                const insertData = batch
+                    .map(sale => {
+                        try {
+                            const normalizedTitle = (sale['Item Title'] || sale['Title'] || sale.title || '').trim();
+                            if (!normalizedTitle) return null;
 
-                    const soldPrice = parseFloat((sale['Sold Price'] || sale['Sold For'] || sale.price || '0').toString().replace(/[$,]/g, '')) || 0;
-                    const soldDateStr = sale['Sold Date'] || sale['Sale Date'] || sale.date || new Date().toISOString();
-                    const soldDate = new Date(soldDateStr).toISOString().split('T')[0];
-                    const buyer = sale['Buyer Username'] || sale['Buyer'] || sale.buyer || null;
-                    const quantity = parseInt(sale['Quantity'] || sale.quantity || '1') || 1;
-
-                    // Insert sale (will be ignored if duplicate due to UNIQUE constraint)
-                    const { error: insertError } = await this.client
-                        .from('sales_history')
-                        .insert({
-                            user_id: this.currentUser.id,
-                            item_title: normalizedTitle,
-                            listing_id: sale['Listing ID'] || sale.listingId || null,
-                            sold_price: soldPrice,
-                            sold_date: soldDate,
-                            quantity: quantity,
-                            buyer_username: buyer,
-                            buyer_location: sale['Buyer Location'] || sale.location || null,
-                            buyer_state: sale['Buyer State'] || sale.state || null,
-                            fees: parseFloat((sale['Fees'] || sale.fees || '0').toString().replace(/[$,]/g, '')) || null,
-                            shipping_cost: parseFloat((sale['Shipping'] || sale.shipping || '0').toString().replace(/[$,]/g, '')) || null
-                        });
-
-                    if (insertError) {
-                        if (insertError.code === '23505') {
-                            // Duplicate - this is expected
-                            stats.duplicates++;
-                        } else {
-                            throw insertError;
+                            const soldPrice = parseFloat((sale['Sold Price'] || sale['Sold For'] || sale.price || '0').toString().replace(/[$,]/g, '')) || 0;
+                            const soldDateStr = sale['Sold Date'] || sale['Sale Date'] || sale.date || new Date().toISOString();
+                            const soldDate = new Date(soldDateStr).toISOString().split('T')[0];
+                            
+                            return {
+                                user_id: this.currentUser.id,
+                                item_title: normalizedTitle,
+                                listing_id: sale['Listing ID'] || sale.listingId || null,
+                                sold_price: soldPrice,
+                                sold_date: soldDate,
+                                quantity: parseInt(sale['Quantity'] || sale.quantity || '1') || 1,
+                                buyer_username: sale['Buyer Username'] || sale['Buyer'] || sale.buyer || null,
+                                buyer_location: sale['Buyer Location'] || sale.location || null,
+                                buyer_state: sale['Buyer State'] || sale.state || null,
+                                fees: parseFloat((sale['Fees'] || sale.fees || '0').toString().replace(/[$,]/g, '')) || null,
+                                shipping_cost: parseFloat((sale['Shipping'] || sale.shipping || '0').toString().replace(/[$,]/g, '')) || null
+                            };
+                        } catch (error) {
+                            console.error('Error preparing sale:', error);
+                            return null;
                         }
-                    } else {
-                        stats.newSales++;
+                    })
+                    .filter(item => item !== null);
 
-                        // Mark corresponding inventory item as sold
-                        await this.client
-                            .from('inventory_history')
-                            .update({ status: 'sold' })
-                            .eq('user_id', this.currentUser.id)
-                            .eq('item_title', normalizedTitle)
-                            .eq('status', 'active');
+                // Bulk insert with upsert to handle duplicates
+                if (insertData.length > 0) {
+                    try {
+                        const { error: insertError, data: insertedData } = await this.client
+                            .from('sales_history')
+                            .upsert(insertData, { onConflict: 'user_id,item_title,sold_date', ignoreDuplicates: true });
+
+                        if (insertError) {
+                            console.error('Bulk insert error:', insertError);
+                            stats.errors.push({ error: insertError.message });
+                        } else {
+                            stats.newSales += insertedData ? insertedData.length : insertData.length;
+                        }
+                    } catch (error) {
+                        console.error('Error in bulk insert:', error);
+                        stats.errors.push({ error: error.message });
                     }
-                } catch (itemError) {
-                    console.error('Error processing sale:', itemError);
-                    stats.errors.push({ item: sale['Item Title'] || 'Unknown', error: itemError.message });
-                }
                 }
                 
                 // Small delay between batches to prevent overwhelming the database
                 if (batchIndex < batches.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await new Promise(resolve => setTimeout(resolve, 50));
                 }
             }
 

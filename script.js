@@ -1242,28 +1242,19 @@ class ResellerNumbersAnalytics {
             }
 
             if (type === 'sold') {
-                this.updateSoldProgress(60, 'Analyzing data...');
+                this.updateSoldProgress(60, 'Loading data...');
             }
 
             if (type === 'inventory') {
                 this.inventoryData = data;
                 this.storedInventoryData = data;
-                
-                // Sync to Supabase if available
-                await this.syncDataToSupabase(data, 'inventory');
             } else if (type === 'sold') {
                 this.soldData = data;
                 this.storedSoldData = data;
-                
-                // Sync to Supabase if available
-                await this.syncDataToSupabase(data, 'sold');
             } else if (type === 'unsold') {
                 this.unsoldData = data;
                 this.storedUnsoldData = data;
                 localStorage.setItem('ebay_unsold_data', JSON.stringify(data));
-                
-                // Sync to Supabase if available
-                await this.syncDataToSupabase(data, 'unsold');
             }
 
             this.checkReadyToAnalyze();
@@ -1273,11 +1264,18 @@ class ResellerNumbersAnalytics {
                 this.populateStoreSnapshot();
             }
             
-            // Complete progress for sold files
+            // Complete progress for sold files immediately
             if (type === 'sold') {
                 this.updateSoldProgress(100, 'Complete!');
+                this.showFileStatus(type, 'success', `${data.length} items loaded successfully`);
                 setTimeout(() => this.hideSoldProgressBar(), 2000);
             }
+            
+            // Sync to Supabase in background (non-blocking)
+            this.syncDataToSupabase(data, type).catch(error => {
+                console.error('Background sync error:', error);
+                this.showFileStatus(type, 'warning', `${data.length} items loaded (cloud sync pending)`);
+            });
         } catch (error) {
             console.error('Error processing file:', error);
             this.showFileStatus(type, 'error', `Error processing file: ${error.message}`);
@@ -1308,19 +1306,12 @@ class ResellerNumbersAnalytics {
         // Only sync if Supabase is available and user is logged in
         if (!supabaseService || !supabaseService.client) {
             console.log('Supabase not available - skipping data sync');
-            this.showFileStatus(type, 'success', `${data.length} items loaded successfully (session only)`);
             return;
         }
 
         try {
-            // Update progress bar instead of showing sync message
-            if (type === 'inventory') {
-                this.updateInventoryProgress(70, 'Syncing to cloud...');
-            } else if (type === 'sold') {
-                this.updateSoldProgress(70, 'Syncing to cloud...');
-            }
-            
-            console.log(`🔄 Starting sync for ${type} with ${data.length} items`);
+            console.log(`🔄 Starting background sync for ${type} with ${data.length} items`);
+            this.showFileStatus(type, 'info', `Syncing ${data.length} items to cloud...`);
             
             let result;
             // Add timeout to prevent hanging
@@ -1335,10 +1326,10 @@ class ResellerNumbersAnalytics {
             })();
             
             const timeoutPromise = new Promise((_, reject) => {
-                // Increase timeout for large files (calculate based on file size)
-                const timeoutDuration = Math.max(60000, data.length * 100); // At least 60 seconds, or 100ms per item
+                // Limit timeout to max 3 minutes even for very large files
+                const timeoutDuration = Math.min(180000, Math.max(60000, data.length * 50)); // Max 3 minutes, min 60 seconds
                 console.log(`⏱️ Sync timeout set to ${timeoutDuration/1000}s for ${data.length} items`);
-                setTimeout(() => reject(new Error(`Sync timeout after ${timeoutDuration/1000}s - file too large`)), timeoutDuration);
+                setTimeout(() => reject(new Error(`Sync timeout after ${timeoutDuration/1000}s`)), timeoutDuration);
             });
             
             result = await Promise.race([syncPromise, timeoutPromise]);
@@ -1347,19 +1338,12 @@ class ResellerNumbersAnalytics {
             if (result && result.success) {
                 const stats = result.stats;
                 
-                // Update progress bar to show sync complete
                 if (type === 'inventory') {
-                    this.updateInventoryProgress(85, 'Sync complete!');
+                    this.showFileStatus(type, 'success', `${data.length} items synced | ${stats.newItems} new, ${stats.updatedItems} updated`);
                 } else if (type === 'sold') {
-                    this.updateSoldProgress(85, 'Sync complete!');
-                }
-                
-                if (type === 'inventory') {
-                    this.showFileStatus(type, 'success', `${data.length} items loaded | ${stats.newItems} new, ${stats.updatedItems} updated`);
-                } else if (type === 'sold') {
-                    this.showFileStatus(type, 'success', `${data.length} sales loaded | ${stats.newSales} new`);
+                    this.showFileStatus(type, 'success', `${data.length} sales synced | ${stats.newSales} new`);
                 } else if (type === 'unsold') {
-                    this.showFileStatus(type, 'success', `${data.length} unsold loaded | ${stats.newUnsold} new`);
+                    this.showFileStatus(type, 'success', `${data.length} unsold synced | ${stats.newUnsold} new`);
                 }
 
                 // Show errors if any
@@ -1370,12 +1354,7 @@ class ResellerNumbersAnalytics {
                 console.log(`✅ Sync successful:`, stats);
             } else {
                 console.error('Sync failed:', result);
-                if (type === 'inventory') {
-                    this.updateInventoryProgress(0, 'Sync failed', true);
-                } else if (type === 'sold') {
-                    this.updateSoldProgress(0, 'Sync failed', true);
-                }
-                this.showFileStatus(type, 'warning', `${data.length} items loaded (sync failed - check console for details)`);
+                this.showFileStatus(type, 'warning', `${data.length} items loaded (cloud sync incomplete)`);
             }
 
             // Update sync status display
@@ -1389,16 +1368,8 @@ class ResellerNumbersAnalytics {
                 errorStack: error.stack
             });
             
-            this.showFileStatus(type, 'warning', `${data.length} items loaded (sync failed - data saved for session only)`);
-            
-            // Update progress bar to show error but continue
-            if (type === 'inventory') {
-                this.updateInventoryProgress(0, 'Sync error', true);
-                setTimeout(() => this.hideInventoryProgress(), 2000);
-            } else if (type === 'sold') {
-                this.updateSoldProgress(0, 'Sync error', true);
-                setTimeout(() => this.hideSoldProgressBar(), 2000);
-            }
+            // Don't show error - data is already loaded successfully for session
+            console.log(`⚠️ Data saved for session only (${data.length} items)`);
         }
     }
 
