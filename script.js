@@ -6001,21 +6001,31 @@ ${data.recommendations.listingOptimizations.map(rec =>
             if (!dailyMap[date]) {
                 dailyMap[date] = {
                     totalSales: 0,
-                    itemCount: 0
+                    itemCount: 0,
+                    items: []
                 };
             }
             dailyMap[date].totalSales += item.price;
             dailyMap[date].itemCount += 1;
+            dailyMap[date].items.push(item);
         });
         
         // Convert to array and sort by total sales
         const sortedDays = Object.entries(dailyMap)
-            .map(([date, data]) => ({
-                date,
-                totalSales: data.totalSales,
-                itemCount: data.itemCount,
-                avgPrice: data.totalSales / data.itemCount
-            }))
+            .map(([date, data]) => {
+                // Find top item (highest price) for that day
+                const topItem = data.items.reduce((max, item) => 
+                    item.price > max.price ? item : max, data.items[0]);
+                
+                return {
+                    date,
+                    totalSales: data.totalSales,
+                    itemCount: data.itemCount,
+                    avgPrice: data.totalSales / data.itemCount,
+                    items: data.items,
+                    topItem: topItem ? topItem.title : 'N/A'
+                };
+            })
             .sort((a, b) => b.totalSales - a.totalSales)
             .slice(0, 10); // Get top 10
         
@@ -6049,15 +6059,144 @@ ${data.recommendations.listingOptimizations.map(rec =>
                         <div class="top-day-metric-label">Avg Price</div>
                         <div class="top-day-metric-value">$${day.avgPrice.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
                     </div>
-                    <div class="top-day-metric">
-                        <div class="top-day-metric-label">Items/Day</div>
-                        <div class="top-day-metric-value">${day.itemCount}</div>
+                    <div class="top-day-metric" style="grid-column: 1 / -1;">
+                        <div class="top-day-metric-label">Top Item Sold</div>
+                        <div class="top-day-metric-value" style="font-size: 0.875rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${day.topItem.substring(0, 40)}${day.topItem.length > 40 ? '...' : ''}</div>
                     </div>
                 </div>
             `;
             
+            // Add click handler to show day details
+            card.style.cursor = 'pointer';
+            card.dataset.dayData = JSON.stringify(day);
+            card.addEventListener('click', () => {
+                this.showDayDetails(day);
+            });
+            
             this.topDaysGrid.appendChild(card);
         });
+    }
+    
+    showDayDetails(dayData) {
+        // Hide annual review main, show day detail view
+        if (this.annualReviewMain) {
+            this.annualReviewMain.style.display = 'none';
+        }
+        
+        // Show day detail view (we'll create this)
+        const dayDetailView = document.getElementById('dayDetailView');
+        if (!dayDetailView) {
+            // Create day detail view if it doesn't exist
+            this.createDayDetailView();
+        }
+        
+        // Populate with day data
+        this.populateDayDetailView(dayData);
+        
+        // Show the view
+        document.getElementById('dayDetailView').style.display = 'block';
+    }
+    
+    populateDayDetailView(dayData) {
+        const title = document.getElementById('dayDetailTitle');
+        const totalRevenue = document.getElementById('dayDetailTotalRevenue');
+        const itemsSold = document.getElementById('dayDetailItemsSold');
+        const avgPrice = document.getElementById('dayDetailAvgPrice');
+        const topItem = document.getElementById('dayDetailTopItem');
+        const itemsGrid = document.getElementById('dayDetailItemsGrid');
+        
+        const dateObj = this.parseSoldDate(dayData.date);
+        const formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        
+        if (title) title.textContent = `Sales for ${formattedDate}`;
+        if (totalRevenue) totalRevenue.textContent = `$${dayData.totalSales.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+        if (itemsSold) itemsSold.textContent = dayData.itemCount;
+        if (avgPrice) avgPrice.textContent = `$${dayData.avgPrice.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+        if (topItem) topItem.textContent = dayData.items.reduce((max, item) => item.price > max.price ? item : max, dayData.items[0]).title;
+        
+        // Populate items grid
+        if (itemsGrid) {
+            itemsGrid.innerHTML = '';
+            
+            // Sort items by price (highest first) and take top 9
+            const sortedItems = [...dayData.items].sort((a, b) => b.price - a.price).slice(0, 9);
+            
+            sortedItems.forEach(item => {
+                const itemCard = document.createElement('div');
+                itemCard.className = 'day-item-card';
+                
+                // Create eBay search URL
+                const searchQuery = encodeURIComponent(item.title);
+                const ebayUrl = `https://www.ebay.com/sch/i.html?_nkw=${searchQuery}`;
+                
+                itemCard.innerHTML = `
+                    <a href="${ebayUrl}" target="_blank" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="day-item-title">${item.title}</div>
+                        <div class="day-item-price">$${item.price.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
+                    </a>
+                `;
+                
+                itemsGrid.appendChild(itemCard);
+            });
+        }
+    }
+    
+    createDayDetailView() {
+        const dayDetailHTML = `
+            <div class="day-detail-view" id="dayDetailView" style="display: none;">
+                <div class="detail-header">
+                    <button class="btn btn-secondary" id="backToAnnualFromDayBtn">← Back to Annual Review</button>
+                    <h3 id="dayDetailTitle">Day Details</h3>
+                </div>
+                
+                <div class="summary-cards" style="margin-bottom: 2rem;">
+                    <div class="card">
+                        <h3>Total Revenue</h3>
+                        <span class="card-icon">💰</span>
+                        <div class="card-value" id="dayDetailTotalRevenue">$0</div>
+                    </div>
+                    <div class="card">
+                        <h3>Items Sold</h3>
+                        <span class="card-icon">📦</span>
+                        <div class="card-value" id="dayDetailItemsSold">0</div>
+                    </div>
+                    <div class="card">
+                        <h3>Avg Price</h3>
+                        <span class="card-icon">📊</span>
+                        <div class="card-value" id="dayDetailAvgPrice">$0</div>
+                    </div>
+                    <div class="card">
+                        <h3>Top Item</h3>
+                        <span class="card-icon">⭐</span>
+                        <div class="card-value" id="dayDetailTopItem" style="font-size: 0.875rem;">-</div>
+                    </div>
+                </div>
+                
+                <div class="day-items-section">
+                    <h3 style="color: #1f2937; margin-bottom: 1rem;">Items Sold This Day</h3>
+                    <div class="day-items-grid" id="dayDetailItemsGrid">
+                        <!-- Items will be populated here -->
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Insert after monthly detail view
+        const monthlyDetailView = document.getElementById('monthlyDetailView');
+        if (monthlyDetailView) {
+            monthlyDetailView.insertAdjacentHTML('afterend', dayDetailHTML);
+        }
+        
+        // Add event listener for back button
+        const backBtn = document.getElementById('backToAnnualFromDayBtn');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                document.getElementById('dayDetailView').style.display = 'none';
+                if (this.annualReviewMain) {
+                    this.annualReviewMain.style.display = 'block';
+                }
+            });
+        }
     }
     
     createAnnualDailyPerformanceChart() {

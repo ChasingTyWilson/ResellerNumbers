@@ -1888,6 +1888,61 @@ header::before {
     font-size: 1.25rem;
 }
 
+/* Day Detail View */
+.day-items-section {
+    margin-top: 2rem;
+}
+
+.day-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.day-item-card {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.day-item-card a {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.day-item-card a:hover {
+    text-decoration: none;
+}
+
+.day-item-card:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.day-item-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.day-item-price {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #667eea;
+}
+
 .store-metric {
     display: flex;
     align-items: center;
