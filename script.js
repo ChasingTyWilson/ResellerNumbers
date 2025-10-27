@@ -803,6 +803,7 @@ class ResellerNumbersAnalytics {
         this.weeklyBarChart = document.getElementById('weeklyBarChart');
         this.annualDailyPerformanceChart = document.getElementById('annualDailyPerformanceChart');
         this.mainDailySalesChart = document.getElementById('mainDailySalesChart');
+        this.topDaysGrid = document.getElementById('topDaysGrid');
         this.annualReviewMain = document.getElementById('annualReviewMain');
         this.monthlyDetailView = document.getElementById('monthlyDetailView');
         this.weeklyDetailView = document.getElementById('weeklyDetailView');
@@ -5975,6 +5976,87 @@ ${data.recommendations.listingOptimizations.map(rec =>
                     }
                 }
             }
+        });
+        
+        // Also create the top sales days
+        this.populateTopSalesDays();
+    }
+    
+    populateTopSalesDays() {
+        if (!this.topDaysGrid) return;
+        
+        // Get all sold items across all months
+        const allItems = [];
+        this.monthlyData.forEach(month => {
+            allItems.push(...month.items);
+        });
+        
+        if (allItems.length === 0) return;
+        
+        // Group sales by day across all months
+        const dailyMap = {};
+        
+        allItems.forEach(item => {
+            const date = item.date;
+            if (!dailyMap[date]) {
+                dailyMap[date] = {
+                    totalSales: 0,
+                    itemCount: 0
+                };
+            }
+            dailyMap[date].totalSales += item.price;
+            dailyMap[date].itemCount += 1;
+        });
+        
+        // Convert to array and sort by total sales
+        const sortedDays = Object.entries(dailyMap)
+            .map(([date, data]) => ({
+                date,
+                totalSales: data.totalSales,
+                itemCount: data.itemCount,
+                avgPrice: data.totalSales / data.itemCount
+            }))
+            .sort((a, b) => b.totalSales - a.totalSales)
+            .slice(0, 10); // Get top 10
+        
+        // Clear existing content
+        this.topDaysGrid.innerHTML = '';
+        
+        // Create cards for each top day
+        sortedDays.forEach((day, index) => {
+            const card = document.createElement('div');
+            card.className = 'top-day-card';
+            
+            const rank = index + 1;
+            const dateObj = this.parseSoldDate(day.date);
+            const weekday = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+            const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            
+            card.innerHTML = `
+                <div class="top-day-rank">${rank}</div>
+                <div class="top-day-date">${formattedDate}</div>
+                <div class="top-day-weekday">${weekday}</div>
+                <div class="top-day-metrics">
+                    <div class="top-day-metric">
+                        <div class="top-day-metric-label">Revenue</div>
+                        <div class="top-day-metric-value primary">$${day.totalSales.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
+                    </div>
+                    <div class="top-day-metric">
+                        <div class="top-day-metric-label">Items Sold</div>
+                        <div class="top-day-metric-value">${day.itemCount}</div>
+                    </div>
+                    <div class="top-day-metric">
+                        <div class="top-day-metric-label">Avg Price</div>
+                        <div class="top-day-metric-value">$${day.avgPrice.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
+                    </div>
+                    <div class="top-day-metric">
+                        <div class="top-day-metric-label">Items/Day</div>
+                        <div class="top-day-metric-value">${day.itemCount}</div>
+                    </div>
+                </div>
+            `;
+            
+            this.topDaysGrid.appendChild(card);
         });
     }
     
