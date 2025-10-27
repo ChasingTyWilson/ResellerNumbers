@@ -5042,12 +5042,15 @@ ${data.recommendations.listingOptimizations.map(rec =>
         }
     }
     
-    confirmDeleteCollection(sku) {
+    async confirmDeleteCollection(sku) {
         const collection = this.getCollectionBySKU(sku);
         if (collection && confirm(`Are you sure you want to delete "${collection.name}"? This cannot be undone.`)) {
-            if (this.deleteCollection(sku)) {
+            const deleted = await this.deleteCollection(sku);
+            if (deleted) {
                 this.populateSavedCollections();
                 alert(`✅ Collection "${collection.name}" deleted successfully.`);
+            } else {
+                alert(`❌ Error deleting collection. Please try again.`);
             }
         }
     }
@@ -5147,18 +5150,26 @@ ${data.recommendations.listingOptimizations.map(rec =>
                 console.log('Loaded', this.storedUnsoldData.length, 'stored unsold items');
             }
             
-            // Load collection purchase data
-            const storedCollections = localStorage.getItem('ebay_collections');
-            if (storedCollections) {
-                this.collections = JSON.parse(storedCollections);
-                console.log('Loaded', this.collections.length, 'collections');
+            // Only load collections from localStorage if not already loaded from Supabase
+            if (this.collections.length === 0) {
+                const storedCollections = localStorage.getItem('ebay_collections');
+                if (storedCollections) {
+                    this.collections = JSON.parse(storedCollections);
+                    console.log('Loaded', this.collections.length, 'collections from localStorage');
+                }
+            } else {
+                console.log('Collections already loaded from Supabase, skipping localStorage');
             }
             
-            // Load business metrics
-            const storedMetrics = localStorage.getItem('ebay_business_metrics');
-            if (storedMetrics) {
-                this.businessMetrics = JSON.parse(storedMetrics);
-                console.log('Loaded business metrics');
+            // Only load business metrics from localStorage if not already loaded from Supabase
+            if (!this.businessMetrics || Object.keys(this.businessMetrics).length === 0) {
+                const storedMetrics = localStorage.getItem('ebay_business_metrics');
+                if (storedMetrics) {
+                    this.businessMetrics = JSON.parse(storedMetrics);
+                    console.log('Loaded business metrics from localStorage');
+                }
+            } else {
+                console.log('Business metrics already loaded from Supabase, skipping localStorage');
             }
         } catch (error) {
             console.error('Error loading stored data:', error);
@@ -5272,12 +5283,15 @@ ${data.recommendations.listingOptimizations.map(rec =>
                 this.collections.push(collectionData);
             }
             
-            localStorage.setItem('ebay_collections', JSON.stringify(this.collections));
             console.log('Saved collection:', collectionData.name);
             
-            // Also save to Supabase if available
+            // Save to Supabase if available (primary storage)
             if (supabaseService && supabaseService.client) {
                 this.saveCollectionToSupabase(collectionData, existingIndex >= 0);
+            } else {
+                // Fallback to localStorage only if Supabase is not available
+                localStorage.setItem('ebay_collections', JSON.stringify(this.collections));
+                console.log('Saved collection to localStorage (Supabase not available)');
             }
             
             return true;
@@ -5308,7 +5322,7 @@ ${data.recommendations.listingOptimizations.map(rec =>
                         notes: c.notes,
                         id: c.id
                     }));
-                    localStorage.setItem('ebay_collections', JSON.stringify(this.collections));
+                    // Don't save to localStorage - Supabase is the source of truth
                 }
             }
         } catch (error) {
@@ -5316,10 +5330,27 @@ ${data.recommendations.listingOptimizations.map(rec =>
         }
     }
     
-    deleteCollection(sku) {
+    async deleteCollection(sku) {
         try {
+            const collectionToDelete = this.collections.find(c => c.sku === sku);
+            
+            // Delete from Supabase if ID exists
+            if (collectionToDelete && collectionToDelete.id && supabaseService && supabaseService.client) {
+                try {
+                    await supabaseService.deleteCollection(collectionToDelete.id);
+                } catch (error) {
+                    console.error('Error deleting collection from Supabase:', error);
+                }
+            }
+            
+            // Remove from local array
             this.collections = this.collections.filter(c => c.sku !== sku);
-            localStorage.setItem('ebay_collections', JSON.stringify(this.collections));
+            
+            // Only save to localStorage if Supabase is not available
+            if (!supabaseService || !supabaseService.client) {
+                localStorage.setItem('ebay_collections', JSON.stringify(this.collections));
+            }
+            
             console.log('Deleted collection with SKU:', sku);
             return true;
         } catch (error) {
@@ -5331,12 +5362,15 @@ ${data.recommendations.listingOptimizations.map(rec =>
     saveBusinessMetrics(metrics) {
         try {
             this.businessMetrics = { ...this.businessMetrics, ...metrics };
-            localStorage.setItem('ebay_business_metrics', JSON.stringify(this.businessMetrics));
             console.log('Saved business metrics');
             
-            // Also save to Supabase if available
+            // Save to Supabase if available (primary storage)
             if (supabaseService && supabaseService.client) {
                 this.saveBusinessMetricsToSupabase(metrics);
+            } else {
+                // Fallback to localStorage only if Supabase is not available
+                localStorage.setItem('ebay_business_metrics', JSON.stringify(this.businessMetrics));
+                console.log('Saved business metrics to localStorage (Supabase not available)');
             }
             
             return true;
