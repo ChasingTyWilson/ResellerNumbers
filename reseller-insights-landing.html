@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reseller Insights - All-in-One Platform for eBay Sellers</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Landing Page Specific Styles */
+        .landing-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 0;
+        }
+
+        .landing-hero {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .landing-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: #cbd5e1;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .hero-tagline {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            max-width: 700px;
+            margin: 0 auto 3rem;
+        }
+
+        .features-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-card.coming-soon {
+            opacity: 0.85;
+        }
+
+        .feature-card.coming-soon::after {
+            content: 'Coming Soon';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .feature-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: #64748b;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        .feature-button {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .feature-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .feature-button.secondary {
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+        }
+
+        .feature-button.secondary:hover {
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+        }
+
+        .feature-button.community {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .feature-button.community:hover {
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+        }
+
+        .feature-button.marketplace {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        .feature-button.marketplace:hover {
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+        }
+
+        .feature-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 1.5rem 0;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            color: #10b981;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .cta-section {
+            background: white;
+            padding: 4rem 2rem;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .cta-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .cta-text {
+            font-size: 1.2rem;
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                padding: 2rem 1rem;
+            }
+
+            .feature-card {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-page">
+        <!-- Hero Section -->
+        <section class="landing-hero">
+            <div class="hero-content">
+                <h1 class="hero-title">Reseller Insights</h1>
+                <p class="hero-subtitle">All-in-One Platform for eBay Sellers</p>
+                <p class="hero-tagline">
+                    Professional analytics, image optimization, store analysis, and exclusive deals - 
+                    everything you need to grow your reselling business in one place.
+                </p>
+            </div>
+        </section>
+
+        <!-- Features Grid -->
+        <section class="features-grid">
+            <!-- Analytics Feature -->
+            <div class="feature-card">
+                <span class="feature-icon">📊</span>
+                <h2 class="feature-title">Analytics</h2>
+                <p class="feature-description">
+                    Deep dive into your eBay sales analytics with Reseller Numbers. Get comprehensive insights into your inventory, sales performance, profitability, and customer behavior.
+                </p>
+                <ul class="feature-list">
+                    <li>Real-time inventory tracking</li>
+                    <li>Sales performance analytics</li>
+                    <li>Collection profitability insights</li>
+                    <li>Customer retention tracking</li>
+                </ul>
+                <a href="index.html" class="feature-button">Launch Analytics Dashboard</a>
+            </div>
+
+            <!-- Image Optimization Feature -->
+            <div class="feature-card">
+                <span class="feature-icon">✨</span>
+                <h2 class="feature-title">Image Optimization</h2>
+                <p class="feature-description">
+                    Professional image tools for eBay sellers. Create collages, add watermarks, optimize, and batch process your product images to make your listings stand out.
+                </p>
+                <ul class="feature-list">
+                    <li>Collage creator with templates</li>
+                    <li>Custom watermark tool</li>
+                    <li>Auto-crop & optimize</li>
+                    <li>Batch processing & export</li>
+                </ul>
+                <a href="index.html#imageOptimizer" class="feature-button">Launch Image Optimizer</a>
+            </div>
+
+            <!-- eBay Store Analysis Feature -->
+            <div class="feature-card coming-soon">
+                <span class="feature-icon">🏪</span>
+                <h2 class="feature-title">eBay Store Analysis</h2>
+                <p class="feature-description">
+                    Enter your eBay store URL and get comprehensive analysis on your store's performance, listing quality, pricing strategy, and optimization opportunities.
+                </p>
+                <ul class="feature-list">
+                    <li>Store performance metrics</li>
+                    <li>Listing quality analysis</li>
+                    <li>Pricing strategy insights</li>
+                    <li>Optimization recommendations</li>
+                </ul>
+                <button class="feature-button" disabled>Coming Soon</button>
+            </div>
+
+            <!-- Juiciest Items Feature -->
+            <div class="feature-card">
+                <span class="feature-icon">🔥</span>
+                <h2 class="feature-title">The "Juiciest" eBay Items of Day</h2>
+                <p class="feature-description">
+                    Discover the top 10 most valuable listings ending on eBay today across various categories. Find the best deals and opportunities before they're gone.
+                </p>
+                <ul class="feature-list">
+                    <li>Top 10 listings ending today</li>
+                    <li>Multiple category searches</li>
+                    <li>Real-time updates</li>
+                    <li>Deal scoring & insights</li>
+                </ul>
+                <a href="juiciest-items.html" class="feature-button secondary">View Juiciest Items</a>
+            </div>
+
+            <!-- Reseller Community Feature -->
+            <div class="feature-card">
+                <span class="feature-icon">👥</span>
+                <h2 class="feature-title">Join Reseller Community</h2>
+                <p class="feature-description">
+                    Connect with thousands of resellers, share strategies, get advice, and grow your network. Join the most active reseller community online.
+                </p>
+                <ul class="feature-list">
+                    <li>Active community forums</li>
+                    <li>Expert advice & tips</li>
+                    <li>Networking opportunities</li>
+                    <li>Exclusive resources</li>
+                </ul>
+                <a href="https://resellerrecharge.com" target="_blank" class="feature-button community">Join ResellerRecharge.com</a>
+            </div>
+
+            <!-- Marketplace Feature -->
+            <div class="feature-card">
+                <span class="feature-icon">🛒</span>
+                <h2 class="feature-title">Sell Cards in OUR MARKETPLACE</h2>
+                <p class="feature-description">
+                    List your sports cards and collectibles on ChasingMarketplace.com. Lower fees, better exposure, and a community of serious collectors.
+                </p>
+                <ul class="feature-list">
+                    <li>Lower listing fees</li>
+                    <li>Targeted collector audience</li>
+                    <li>Fast payment processing</li>
+                    <li>Dedicated seller support</li>
+                </ul>
+                <a href="https://chasingmarketplace.com" target="_blank" class="feature-button marketplace">Visit ChasingMarketplace.com</a>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="cta-content">
+                <h2 class="cta-title">Ready to Grow Your Reselling Business?</h2>
+                <p class="cta-text">
+                    Start with our free analytics platform and unlock powerful insights into your eBay sales. 
+                    No credit card required. 14-day free trial.
+                </p>
+                <a href="index.html" class="feature-button" style="max-width: 300px; margin: 0 auto;">Get Started Free</a>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#' && href.includes('#')) {
+                    e.preventDefault();
+                    const targetId = href.split('#')[1];
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

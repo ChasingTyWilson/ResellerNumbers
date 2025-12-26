@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The "Juiciest" eBay Items of the Day - Reseller Insights</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .juiciest-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+        }
+
+        .juiciest-header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-radius: 20px;
+            margin-bottom: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .juiciest-header h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .juiciest-header p {
+            font-size: 1.2rem;
+            color: #cbd5e1;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .categories-tabs {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .category-tab {
+            padding: 0.75rem 1.5rem;
+            background: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #1e293b;
+        }
+
+        .category-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .category-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .items-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .item-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .item-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f59e0b, #ef4444);
+        }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .item-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+        }
+
+        .item-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .item-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #059669;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        .item-bids {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+
+        .item-time {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .item-link {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .item-link:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 4rem;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            background: white;
+            border-radius: 15px;
+            color: #64748b;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+
+        @media (max-width: 768px) {
+            .juiciest-header h1 {
+                font-size: 2rem;
+            }
+
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="juiciest-page">
+        <a href="reseller-insights-landing.html" class="back-link">← Back to Reseller Insights</a>
+        
+        <div class="juiciest-header">
+            <h1>🔥 The "Juiciest" eBay Items of the Day</h1>
+            <p>Top 10 listings ending today across various categories</p>
+        </div>
+
+        <div class="categories-tabs">
+            <button class="category-tab active" data-category="sports-cards">Sports Cards</button>
+            <button class="category-tab" data-category="collectibles">Collectibles</button>
+            <button class="category-tab" data-category="electronics">Electronics</button>
+            <button class="category-tab" data-category="fashion">Fashion</button>
+            <button class="category-tab" data-category="all">All Categories</button>
+        </div>
+
+        <div class="items-container">
+            <div id="loadingState" class="loading-state">
+                <p>Loading the juiciest items...</p>
+            </div>
+            
+            <div id="itemsGrid" class="items-grid" style="display: none;">
+                <!-- Items will be populated here -->
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <h3>No items found</h3>
+                <p>Check back later for new listings ending today!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for demonstration - replace with actual API calls
+        const mockItems = [
+            {
+                title: "2023 Topps Chrome Michael Jordan Rookie Card PSA 10",
+                price: 12500,
+                bids: 23,
+                timeLeft: "2h 15m",
+                image: "https://via.placeholder.com/300x200?text=Sports+Card",
+                url: "https://www.ebay.com/itm/example1"
+            },
+            {
+                title: "Vintage 1952 Mickey Mantle Baseball Card - Authenticated",
+                price: 8500,
+                bids: 18,
+                timeLeft: "3h 42m",
+                image: "https://via.placeholder.com/300x200?text=Sports+Card",
+                url: "https://www.ebay.com/itm/example2"
+            },
+            {
+                title: "LeBron James 2003 Topps Chrome Rookie Card BGS 9.5",
+                price: 6200,
+                bids: 31,
+                timeLeft: "1h 28m",
+                image: "https://via.placeholder.com/300x200?text=Sports+Card",
+                url: "https://www.ebay.com/itm/example3"
+            },
+            {
+                title: "Tom Brady 2000 Playoff Contenders Rookie Card PSA 10",
+                price: 4800,
+                bids: 15,
+                timeLeft: "4h 12m",
+                image: "https://via.placeholder.com/300x200?text=Sports+Card",
+                url: "https://www.ebay.com/itm/example4"
+            },
+            {
+                title: "Wayne Gretzky 1979 O-Pee-Chee Rookie Card PSA 8",
+                price: 11200,
+                bids: 27,
+                timeLeft: "5h 33m",
+                image: "https://via.placeholder.com/300x200?text=Sports+Card",
+                url: "https://www.ebay.com/itm/example5"
+            },
+            {
+                title: "Kobe Bryant 1996 Topps Chrome Rookie Card BGS 9.5",
+                price: 7500,
+                bids: 19,
+                timeLeft: "2h 55m",
+                image: "https://via.placeholder.com/300x200?text=Sports+Card",
+                url: "https://www.ebay.com/itm/example6"
+            },
+            {
+                title: "Patrick Mahomes 2017 Panini Prizm Rookie Card PSA 10",
+                price: 3200,
+                bids: 42,
+                timeLeft: "1h 7m",
+                image: "https://via.placeholder.com/300x200?text=Sports+Card",
+                url: "https://www.ebay.com/itm/example7"
+            },
+            {
+                title: "1951 Bowman Willie Mays Rookie Card - Excellent Condition",
+                price: 9500,
+                bids: 12,
+                timeLeft: "6h 18m",
+                image: "https://via.placeholder.com/300x200?text=Sports+Card",
+                url: "https://www.ebay.com/itm/example8"
+            },
+            {
+                title: "Luka Doncic 2018 Panini Prizm Rookie Card PSA 10",
+                price: 2800,
+                bids: 35,
+                timeLeft: "3h 24m",
+                image: "https://via.placeholder.com/300x200?text=Sports+Card",
+                url: "https://www.ebay.com/itm/example9"
+            },
+            {
+                title: "1986 Fleer Michael Jordan Rookie Card PSA 9",
+                price: 5400,
+                bids: 21,
+                timeLeft: "4h 48m",
+                image: "https://via.placeholder.com/300x200?text=Sports+Card",
+                url: "https://www.ebay.com/itm/example10"
+            }
+        ];
+
+        function renderItems(items) {
+            const grid = document.getElementById('itemsGrid');
+            const loading = document.getElementById('loadingState');
+            const empty = document.getElementById('emptyState');
+
+            if (items.length === 0) {
+                loading.style.display = 'none';
+                grid.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+
+            loading.style.display = 'none';
+            empty.style.display = 'none';
+            grid.style.display = 'grid';
+
+            grid.innerHTML = items.map(item => `
+                <div class="item-card">
+                    <img src="${item.image}" alt="${item.title}" class="item-image" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                    <h3 class="item-title">${item.title}</h3>
+                    <div class="item-price">$${item.price.toLocaleString()}</div>
+                    <div class="item-info">
+                        <span class="item-bids">${item.bids} bids</span>
+                        <span class="item-time">${item.timeLeft} left</span>
+                    </div>
+                    <a href="${item.url}" target="_blank" class="item-link">View on eBay</a>
+                </div>
+            `).join('');
+        }
+
+        // Category tab switching
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const category = this.dataset.category;
+                // In production, this would fetch items for the selected category
+                // For now, we'll just show the mock data
+                setTimeout(() => {
+                    renderItems(mockItems);
+                }, 500);
+            });
+        });
+
+        // Initial load
+        setTimeout(() => {
+            renderItems(mockItems);
+        }, 1000);
+
+        // TODO: Integrate with actual eBay API to fetch ending soon listings
+        // This would use the browse API to search for items ending today
+        // and sort by value/deal score
+    </script>
+</body>
+</html>
+
+

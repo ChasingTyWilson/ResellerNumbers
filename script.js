@@ -27,29 +27,8 @@ class ResellerNumbersAnalytics {
         this.loadStoredData();
         this.initializeElements();
         this.setupEventListeners();
-        this.initializeSupabase();
-    }
-
-    async initializeSupabase() {
-        console.log('🔧 Initializing Supabase...');
-        // Wait a moment for Supabase config to load
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        try {
-        // Initialize Supabase service
-        const initialized = await supabaseService.initialize();
-        if (initialized) {
-            console.log('✅ Supabase initialized successfully');
-        } else {
-            console.warn('⚠️ Supabase not configured - running in demo mode');
-        }
-        } catch (error) {
-            console.error('❌ Error initializing Supabase:', error);
-            console.warn('⚠️ Falling back to demo mode');
-        }
-        
-        // Always check auth status (works for both Supabase and demo mode)
-        await this.checkAuthStatus();
+        // Check if user email is stored (localStorage-based)
+        this.checkAuthStatus();
     }
 
     setupAuthListeners() {
@@ -60,291 +39,132 @@ class ResellerNumbersAnalytics {
         
         // Get auth elements
         this.authScreen = document.getElementById('authScreen');
-        this.loginFormElement = document.getElementById('loginFormElement');
-        this.signupFormElement = document.getElementById('signupFormElement');
-        this.loginFormWrapper = document.getElementById('loginForm');
-        this.signupFormWrapper = document.getElementById('signupForm');
-        this.showSignupBtn = document.getElementById('showSignupBtn');
-        this.showLoginBtn = document.getElementById('showLoginBtn');
+        const emailForm = document.getElementById('emailForm');
 
-        // Switch to signup form
-        if (this.showSignupBtn) {
-            this.showSignupBtn.addEventListener('click', (e) => {
+        // Handle email form submission
+        if (emailForm) {
+            emailForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                this.loginFormWrapper.style.display = 'none';
-                this.signupFormWrapper.style.display = 'block';
+                await this.handleEmailSubmit();
             });
         }
-
-        // Switch to login form
-        if (this.showLoginBtn) {
-            this.showLoginBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.signupFormWrapper.style.display = 'none';
-                this.loginFormWrapper.style.display = 'block';
-            });
-        }
-
-        // Handle login submission
-        if (this.loginFormElement) {
-            this.loginFormElement.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await this.handleLogin();
-            });
-        }
-
-        // Handle signup submission
-        if (this.signupFormElement) {
-            this.signupFormElement.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await this.handleSignup();
-            });
-        }
-
 
         // Mark listeners as setup
         this.authListenersSetup = true;
     }
 
-    async checkAuthStatus() {
+    checkAuthStatus() {
         console.log('🔍 Checking auth status...');
         // Setup auth listeners first
         this.setupAuthListeners();
         
-        // Check if using Supabase
-        if (supabaseService && supabaseService.client) {
-            console.log('✅ Supabase client available, checking user...');
-            const user = await supabaseService.getCurrentUser();
-            console.log('Current user:', user);
-            if (user) {
-                // Check if user is approved
-                const profile = await supabaseService.getUserProfile();
-                console.log('User profile:', profile);
-                if (profile && profile.status === 'active') {
-                    // User is logged in and approved with Supabase
-                    console.log('✅ User logged in and approved with Supabase, showing app');
-                this.showApp();
-                return;
-                } else if (profile && profile.status === 'pending') {
-                    console.log('⚠️ User account is pending approval');
-                    alert('Your account is pending approval. Please wait for admin approval before accessing the platform.');
-                    return;
-                } else if (profile && profile.status === 'suspended') {
-                    console.log('⚠️ User account is suspended');
-                    alert('Your account has been suspended. Please contact support for assistance.');
-                return;
-            }
-            }
-        } else {
-            console.log('⚠️ Supabase not available, checking demo mode...');
-        }
+        // Check if user email is stored in localStorage
+        const userEmail = localStorage.getItem('userEmail');
         
-        // Fall back to localStorage check (demo mode)
-        const authToken = localStorage.getItem('authToken');
-        const userData = localStorage.getItem('userData');
-        
-        console.log('Demo mode check - authToken:', !!authToken, 'userData:', !!userData);
-        
-        if (authToken && userData) {
-            // User is logged in with demo mode
-            console.log('✅ User logged in with demo mode, showing app');
+        if (userEmail) {
+            console.log('✅ User email found:', userEmail);
+            // Load user data and show app
+            this.loadUserData();
             this.showApp();
         } else {
-            console.log('❌ No authentication found, showing auth screen');
-        }
-        // Otherwise, auth screen is already visible by default
-    }
-
-    async handleLogin() {
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        const rememberMe = document.getElementById('rememberMe').checked;
-
-        if (!email || !password) {
-            alert('❌ Please enter valid credentials.');
-            return;
-        }
-
-        // Check if using Supabase
-        if (supabaseService && supabaseService.client) {
-            try {
-            const result = await supabaseService.signIn(email, password);
-            
-            if (result.success) {
-                alert('✅ Login successful! Welcome back.');
-                await this.loadUserData();
-                this.showApp();
-            } else {
-                alert('❌ Login failed: ' + result.error);
-                }
-            } catch (error) {
-                console.error('❌ Supabase login error:', error);
-                alert('❌ Login failed: ' + error.message);
-            }
-        } else {
-            // Demo mode fallback
-            const mockAuthToken = 'demo_token_' + Date.now();
-            const mockUserData = {
-                email: email,
-                name: 'Demo User',
-                subscriptionStatus: 'trial',
-                trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
-            };
-
-            localStorage.setItem('authToken', mockAuthToken);
-            localStorage.setItem('userData', JSON.stringify(mockUserData));
-
-            alert('✅ Login successful! (Demo mode)');
-            this.showApp();
+            console.log('❌ No email found, showing email entry screen');
+            // Auth screen is already visible by default
         }
     }
 
-    async handleSignup() {
-        const name = document.getElementById('signupName').value;
-        const email = document.getElementById('signupEmail').value;
-        const password = document.getElementById('signupPassword').value;
-        const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
-        const agreeTerms = document.getElementById('agreeTerms').checked;
+    async handleEmailSubmit() {
+        const email = document.getElementById('userEmail').value;
 
-        console.log('🔍 Starting signup process...');
-        console.log('Supabase service available:', !!supabaseService);
-        console.log('Supabase client available:', !!(supabaseService && supabaseService.client));
-
-        // Validation
-        if (!name || !email || !password || !passwordConfirm) {
-            alert('❌ Please fill in all fields.');
+        if (!email) {
+            alert('❌ Please enter a valid email address.');
             return;
         }
 
-        if (password !== passwordConfirm) {
-            alert('❌ Passwords do not match.');
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('❌ Please enter a valid email address.');
             return;
         }
 
-        if (password.length < 8) {
-            alert('❌ Password must be at least 8 characters.');
-            return;
+        // Store email in localStorage
+        localStorage.setItem('userEmail', email);
+        
+        // Create or update user data
+        let userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        userData.email = email;
+        if (!userData.createdAt) {
+            userData.createdAt = new Date().toISOString();
         }
-
-        if (!agreeTerms) {
-            alert('❌ Please agree to the Terms of Service and Privacy Policy.');
-            return;
+        if (!userData.subscriptionStatus) {
+            userData.subscriptionStatus = 'free';
         }
+        localStorage.setItem('userData', JSON.stringify(userData));
 
-        // Check if using Supabase
-        if (supabaseService && supabaseService.client) {
-            console.log('✅ Using Supabase for signup');
-            const result = await supabaseService.signUp(email, password, name);
-            console.log('Signup result:', result);
-            
-            if (result.success) {
-                alert('✅ Account created successfully! Your account is pending approval. You will receive an email once approved.\n\nPlease wait for approval before accessing your account.');
-                
-                // Clear the form
-                document.getElementById('signupFormElement').reset();
-                
-                // Show login form instead
-                this.signupFormWrapper.style.display = 'none';
-                this.loginFormWrapper.style.display = 'block';
-            } else {
-                alert('❌ Signup failed: ' + result.error);
-            }
-        } else {
-            console.log('⚠️ Using demo mode fallback');
-            // Demo mode fallback
-            const mockAuthToken = 'demo_token_' + Date.now();
-            const mockUserData = {
-                email: email,
-                name: name,
-                subscriptionStatus: 'trial',
-                trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
-            };
-
-            localStorage.setItem('authToken', mockAuthToken);
-            localStorage.setItem('userData', JSON.stringify(mockUserData));
-
-            alert('✅ Account created successfully! (Demo mode)');
+        console.log('✅ Email saved:', email);
+        
+        // Load any existing user data and show app
+        this.loadUserData();
             this.showApp();
-        }
     }
 
 
-    async loadUserData() {
-        // Load user data from Supabase if available
-        if (supabaseService && supabaseService.client) {
-            console.log('📥 Loading user data from Supabase...');
+    loadUserData() {
+        console.log('📥 Loading user data from localStorage...');
             
             // Load business metrics
-            const metrics = await supabaseService.getBusinessMetrics();
-            if (metrics) {
-                this.businessMetrics = {
-                    minutesPerItem: metrics.minutes_per_item || 0,
-                    idealHourlyRate: metrics.ideal_hourly_rate || 0,
-                    avgFeePercent: metrics.avg_fee_percent || 0,
-                    taxBracket: metrics.tax_bracket || 0
-                };
+        const storedMetrics = localStorage.getItem('businessMetrics');
+        if (storedMetrics) {
+            try {
+                this.businessMetrics = JSON.parse(storedMetrics);
                 console.log('✅ Loaded business metrics');
+            } catch (e) {
+                console.error('Error loading business metrics:', e);
+            }
             }
 
             // Load collections
-            const collections = await supabaseService.getCollections();
-            if (collections) {
-                this.collections = collections.map(c => ({
-                    name: c.name,
-                    sku: c.sku,
-                    purchaseDate: c.purchase_date,
-                    cost: c.cost,
-                    notes: c.notes,
-                    id: c.id
-                }));
+        const storedCollections = localStorage.getItem('collections');
+        if (storedCollections) {
+            try {
+                this.collections = JSON.parse(storedCollections);
                 console.log(`✅ Loaded ${this.collections.length} collections`);
+            } catch (e) {
+                console.error('Error loading collections:', e);
             }
+        }
 
-            // Load ALL historical sold data from Supabase
-            const salesHistory = await supabaseService.getSalesHistory(5000); // Get up to 5000 sales
-            if (salesHistory && salesHistory.length > 0) {
-                // Convert database format back to CSV-like format
-                this.storedSoldData = salesHistory.map(sale => ({
-                    'Item Title': sale.item_title,
-                    'Sold Price': sale.sold_price.toString(),
-                    'Sold For': sale.sold_price.toString(),
-                    'Sale Date': sale.sold_date,
-                    'Sold Date': sale.sold_date,
-                    'Quantity': sale.quantity.toString(),
-                    'Buyer Username': sale.buyer_username || '',
-                    'Buyer': sale.buyer_username || '',
-                    'Listing ID': sale.listing_id || '',
-                    'Buyer State': sale.buyer_state || '',
-                    'Fees': sale.fees?.toString() || '0',
-                    'Shipping': sale.shipping_cost?.toString() || '0'
-                }));
+        // Load sold data (check both new and old keys for backward compatibility)
+        let storedSoldData = localStorage.getItem('soldData');
+        if (!storedSoldData) {
+            storedSoldData = localStorage.getItem('ebay_sold_data'); // fallback to old key
+        }
+        if (storedSoldData) {
+            try {
+                this.storedSoldData = JSON.parse(storedSoldData);
                 this.soldData = this.storedSoldData;
-                console.log(`✅ Loaded ${this.storedSoldData.length} historical sales from database`);
+                console.log(`✅ Loaded ${this.storedSoldData.length} sales from localStorage`);
+            } catch (e) {
+                console.error('Error loading sold data:', e);
             }
+        }
 
-            // Load ALL historical inventory data
-            const inventoryHistory = await supabaseService.getInventoryHistory('active', 5000); // Get up to 5000 active items
-            if (inventoryHistory && inventoryHistory.length > 0) {
-                // Convert database format back to CSV-like format
-                this.storedInventoryData = inventoryHistory.map(item => ({
-                    'Item Title': item.item_title,
-                    'Current Price': item.current_price.toString(),
-                    'Current price': item.current_price.toString(),
-                    'Quantity': item.quantity.toString(),
-                    'Available qua': item.quantity.toString(),
-                    'Days Listed': item.days_listed.toString(),
-                    'Views': item.views.toString(),
-                    'Watchers': item.watchers.toString(),
-                    'Listing ID': item.listing_id || '',
-                    'Category': item.category || '',
-                    'Condition': item.condition || ''
-                }));
+        // Load inventory data (check both new and old keys for backward compatibility)
+        let storedInventoryData = localStorage.getItem('inventoryData');
+        if (!storedInventoryData) {
+            storedInventoryData = localStorage.getItem('ebay_inventory_data'); // fallback to old key
+        }
+        if (storedInventoryData) {
+            try {
+                this.storedInventoryData = JSON.parse(storedInventoryData);
                 this.inventoryData = this.storedInventoryData;
-                console.log(`✅ Loaded ${this.storedInventoryData.length} active inventory items from database`);
+                console.log(`✅ Loaded ${this.storedInventoryData.length} inventory items from localStorage`);
+            } catch (e) {
+                console.error('Error loading inventory data:', e);
+            }
             }
 
             console.log('✅ User data loading complete');
-        }
     }
 
     showApp() {
@@ -495,20 +315,16 @@ class ResellerNumbersAnalytics {
         }
     }
 
-    async updateUserEmailDisplay() {
+    updateUserEmailDisplay() {
         const userEmailDisplay = document.getElementById('userEmailDisplay');
         if (!userEmailDisplay) return;
 
-        // Try to get user from Supabase
-        if (supabaseService && supabaseService.client) {
-            const user = await supabaseService.getCurrentUser();
-            if (user && user.email) {
-                userEmailDisplay.textContent = user.email;
-                return;
-            }
-        }
-
-        // Fall back to localStorage
+        // Get email from localStorage
+        const userEmail = localStorage.getItem('userEmail');
+        if (userEmail) {
+            userEmailDisplay.textContent = userEmail;
+        } else {
+            // Fall back to userData
         const userData = localStorage.getItem('userData');
         if (userData) {
             try {
@@ -516,65 +332,45 @@ class ResellerNumbersAnalytics {
                 userEmailDisplay.textContent = parsed.email || 'user@example.com';
             } catch (e) {
                 userEmailDisplay.textContent = 'user@example.com';
+                }
             }
         }
     }
 
-    async handleLogout() {
-        const confirmed = confirm('Are you sure you want to sign out?');
+    handleLogout() {
+        const confirmed = confirm('Are you sure you want to clear your data and start over?');
         if (!confirmed) return;
 
-        // Logout from Supabase if using it
-        if (supabaseService && supabaseService.client) {
-            await supabaseService.signOut();
-        }
-
-        // Clear local storage
-        localStorage.removeItem('authToken');
+        // Clear localStorage (this will require email entry again)
+        localStorage.removeItem('userEmail');
         localStorage.removeItem('userData');
+        localStorage.removeItem('authToken');
 
-        // Hide all screens
-        const platformSelector = document.getElementById('platformSelector');
-        if (platformSelector) platformSelector.style.display = 'none';
-        if (this.landingPage) this.landingPage.style.display = 'none';
-
-        // Show auth screen
-        if (this.authScreen) {
-            this.authScreen.style.display = 'flex';
-        }
-
-        // Reset to login form
-        if (this.loginFormWrapper) this.loginFormWrapper.style.display = 'block';
-        if (this.signupFormWrapper) this.signupFormWrapper.style.display = 'none';
-
-        alert('✅ You have been signed out successfully.');
+        // Reload page to show email entry screen
+        window.location.reload();
     }
 
-    async updateHeaderWithUserInfo() {
+    updateHeaderWithUserInfo() {
+        // Get user data from localStorage
+        const userEmail = localStorage.getItem('userEmail');
+        const stored = localStorage.getItem('userData');
         let userData = null;
         
-        // Get user data from Supabase or localStorage
-        if (supabaseService && supabaseService.client) {
-            const profile = await supabaseService.getUserProfile();
-            if (profile) {
-                userData = {
-                    email: profile.email,
-                    name: profile.full_name || 'User',
-                    subscriptionStatus: profile.subscription_status
-                };
+        if (stored) {
+            try {
+                userData = JSON.parse(stored);
+            } catch (e) {
+                console.error('Error parsing userData:', e);
             }
-        } else {
-            const stored = localStorage.getItem('userData');
-            if (stored) userData = JSON.parse(stored);
         }
-
-        if (userData) {
+        
+        if (userEmail || userData) {
             const header = document.querySelector('.header');
             if (header) {
                 // Add logout button
                 const logoutBtn = document.createElement('button');
                 logoutBtn.className = 'btn btn-secondary btn-small';
-                logoutBtn.textContent = 'Logout';
+                logoutBtn.textContent = 'Clear Data & Start Over';
                 logoutBtn.style.cssText = 'position: absolute; top: 20px; right: 20px;';
                 logoutBtn.addEventListener('click', () => this.handleLogout());
                 
@@ -587,21 +383,6 @@ class ResellerNumbersAnalytics {
         }
     }
 
-    async handleLogout() {
-        if (confirm('Are you sure you want to logout?')) {
-            // Logout from Supabase if available
-            if (supabaseService && supabaseService.client) {
-                await supabaseService.signOut();
-            }
-            
-            // Clear localStorage
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userData');
-            
-            // Reload page to show auth screen
-            window.location.reload();
-        }
-    }
 
     initializeElements() {
         // Landing page elements
@@ -5163,15 +4944,15 @@ ${data.recommendations.listingOptimizations.map(rec =>
     
     loadStoredData() {
         try {
-            // Load stored inventory data
-            const storedInventory = localStorage.getItem('ebay_inventory_data');
+            // Load stored inventory data (try new key first, then fallback to old key)
+            let storedInventory = localStorage.getItem('inventoryData') || localStorage.getItem('ebay_inventory_data');
             if (storedInventory) {
                 this.storedInventoryData = JSON.parse(storedInventory);
                 console.log('Loaded', this.storedInventoryData.length, 'stored inventory items');
             }
             
-            // Load stored sold data
-            const storedSold = localStorage.getItem('ebay_sold_data');
+            // Load stored sold data (try new key first, then fallback to old key)
+            let storedSold = localStorage.getItem('soldData') || localStorage.getItem('ebay_sold_data');
             if (storedSold) {
                 this.storedSoldData = JSON.parse(storedSold);
                 console.log('Loaded', this.storedSoldData.length, 'stored sold items');
@@ -5185,26 +4966,22 @@ ${data.recommendations.listingOptimizations.map(rec =>
                 console.log('Loaded', this.storedUnsoldData.length, 'stored unsold items');
             }
             
-            // Only load collections from localStorage if not already loaded from Supabase
+            // Load collections from localStorage (try new key first, then fallback to old key)
             if (this.collections.length === 0) {
-                const storedCollections = localStorage.getItem('ebay_collections');
+                let storedCollections = localStorage.getItem('collections') || localStorage.getItem('ebay_collections');
                 if (storedCollections) {
                     this.collections = JSON.parse(storedCollections);
                     console.log('Loaded', this.collections.length, 'collections from localStorage');
                 }
-            } else {
-                console.log('Collections already loaded from Supabase, skipping localStorage');
             }
             
-            // Only load business metrics from localStorage if not already loaded from Supabase
+            // Load business metrics from localStorage (try new key first, then fallback to old key)
             if (!this.businessMetrics || Object.keys(this.businessMetrics).length === 0) {
-                const storedMetrics = localStorage.getItem('ebay_business_metrics');
+                let storedMetrics = localStorage.getItem('businessMetrics') || localStorage.getItem('ebay_business_metrics');
                 if (storedMetrics) {
                     this.businessMetrics = JSON.parse(storedMetrics);
                     console.log('Loaded business metrics from localStorage');
                 }
-            } else {
-                console.log('Business metrics already loaded from Supabase, skipping localStorage');
             }
         } catch (error) {
             console.error('Error loading stored data:', error);
@@ -5227,8 +5004,8 @@ ${data.recommendations.listingOptimizations.map(rec =>
                 console.warn('Trimmed inventory data to 5,000 most recent items to save storage');
             }
             
-            localStorage.setItem('ebay_inventory_data', JSON.stringify(this.storedInventoryData));
-            console.log('Saved', this.storedInventoryData.length, 'inventory items');
+            localStorage.setItem('inventoryData', JSON.stringify(this.storedInventoryData));
+            console.log('✅ Saved', this.storedInventoryData.length, 'inventory items to localStorage');
             return this.storedInventoryData.length;
         } catch (error) {
             if (error.name === 'QuotaExceededError') {
@@ -5258,8 +5035,8 @@ ${data.recommendations.listingOptimizations.map(rec =>
                 console.warn('Trimmed sold data to 10,000 most recent items to save storage');
             }
             
-            localStorage.setItem('ebay_sold_data', JSON.stringify(this.storedSoldData));
-            console.log('Saved', this.storedSoldData.length, 'sold items');
+            localStorage.setItem('soldData', JSON.stringify(this.storedSoldData));
+            console.log('✅ Saved', this.storedSoldData.length, 'sold items to localStorage');
             return this.storedSoldData.length;
         } catch (error) {
             if (error.name === 'QuotaExceededError') {
@@ -5320,14 +5097,9 @@ ${data.recommendations.listingOptimizations.map(rec =>
             
             console.log('Saved collection:', collectionData.name);
             
-            // Save to Supabase if available (primary storage)
-            if (supabaseService && supabaseService.client) {
-                this.saveCollectionToSupabase(collectionData, existingIndex >= 0);
-            } else {
-                // Fallback to localStorage only if Supabase is not available
-                localStorage.setItem('ebay_collections', JSON.stringify(this.collections));
-                console.log('Saved collection to localStorage (Supabase not available)');
-            }
+            // Save to localStorage
+            localStorage.setItem('collections', JSON.stringify(this.collections));
+            console.log('✅ Collection saved to localStorage');
             
             return true;
         } catch (error) {
@@ -5336,67 +5108,15 @@ ${data.recommendations.listingOptimizations.map(rec =>
         }
     }
     
-    async saveCollectionToSupabase(collectionData, isUpdate) {
+    deleteCollection(sku) {
         try {
-            if (isUpdate) {
-                // Find the collection ID
-                const existingCollection = this.collections.find(c => c.sku === collectionData.sku);
-                if (existingCollection && existingCollection.id) {
-                    const result = await supabaseService.updateCollection(existingCollection.id, collectionData);
-                    if (result && result.success) {
-                        console.log('✅ Collection updated in Supabase');
-                    } else {
-                        console.error('❌ Failed to update collection in Supabase:', result);
-                    }
-                }
-            } else {
-                const result = await supabaseService.saveCollection(collectionData);
-                if (result && result.success) {
-                    console.log('✅ Collection saved to Supabase');
-                    // Reload collections from Supabase to get the ID
-                    const collections = await supabaseService.getCollections();
-                    if (collections) {
-                        this.collections = collections.map(c => ({
-                            name: c.name,
-                            sku: c.sku,
-                            purchaseDate: c.purchase_date,
-                            cost: c.cost,
-                            notes: c.notes,
-                            id: c.id
-                        }));
-                        // Don't save to localStorage - Supabase is the source of truth
-                    }
-                } else {
-                    console.error('❌ Failed to save collection to Supabase:', result);
-                }
-            }
-        } catch (error) {
-            console.error('❌ Error saving collection to Supabase:', error);
-        }
-    }
-    
-    async deleteCollection(sku) {
-        try {
-            const collectionToDelete = this.collections.find(c => c.sku === sku);
-            
-            // Delete from Supabase if ID exists
-            if (collectionToDelete && collectionToDelete.id && supabaseService && supabaseService.client) {
-                try {
-                    await supabaseService.deleteCollection(collectionToDelete.id);
-                } catch (error) {
-                    console.error('Error deleting collection from Supabase:', error);
-                }
-            }
-            
             // Remove from local array
             this.collections = this.collections.filter(c => c.sku !== sku);
             
-            // Only save to localStorage if Supabase is not available
-            if (!supabaseService || !supabaseService.client) {
-                localStorage.setItem('ebay_collections', JSON.stringify(this.collections));
-            }
+            // Save to localStorage
+            localStorage.setItem('collections', JSON.stringify(this.collections));
             
-            console.log('Deleted collection with SKU:', sku);
+            console.log('✅ Deleted collection with SKU:', sku);
             return true;
         } catch (error) {
             console.error('Error deleting collection:', error);
@@ -5404,42 +5124,19 @@ ${data.recommendations.listingOptimizations.map(rec =>
         }
     }
     
-    async saveBusinessMetrics(metrics) {
+    saveBusinessMetrics(metrics) {
         try {
             this.businessMetrics = { ...this.businessMetrics, ...metrics };
             console.log('💾 Saving business metrics:', metrics);
             
-            // Save to Supabase if available (primary storage)
-            if (supabaseService && supabaseService.client) {
-                const result = await this.saveBusinessMetricsToSupabase(metrics);
-                if (result && result.success) {
-                    console.log('✅ Business metrics saved to Supabase');
-                } else {
-                    console.error('❌ Failed to save business metrics to Supabase:', result);
-                    // Fallback to localStorage if Supabase fails
-                    localStorage.setItem('ebay_business_metrics', JSON.stringify(this.businessMetrics));
-                }
-            } else {
-                // Fallback to localStorage only if Supabase is not available
-                localStorage.setItem('ebay_business_metrics', JSON.stringify(this.businessMetrics));
-                console.log('Saved business metrics to localStorage (Supabase not available)');
-            }
+            // Save to localStorage
+            localStorage.setItem('businessMetrics', JSON.stringify(this.businessMetrics));
+            console.log('✅ Business metrics saved to localStorage');
             
             return true;
         } catch (error) {
             console.error('❌ Error saving business metrics:', error);
             return false;
-        }
-    }
-    
-    async saveBusinessMetricsToSupabase(metrics) {
-        try {
-            const result = await supabaseService.saveBusinessMetrics(metrics);
-            console.log('📊 Supabase save result:', result);
-            return result;
-        } catch (error) {
-            console.error('❌ Error saving business metrics to Supabase:', error);
-            return { success: false, error: error.message };
         }
     }
     
@@ -5519,6 +5216,11 @@ ${data.recommendations.listingOptimizations.map(rec =>
         // If switching to secret analysis, populate it
         if (tabName === 'secret-analysis') {
             this.populateSecretAnalysis();
+        }
+        
+        // If switching to johnny bonus, populate it
+        if (tabName === 'johnny-bonus') {
+            this.populateJohnnyBonus();
         }
     }
     
@@ -8533,6 +8235,78 @@ ${data.recommendations.listingOptimizations.map(rec =>
             // Resolve after a short delay
             setTimeout(resolve, 50);
         });
+    }
+
+    // ============= JOHNNY CHRISTMAS BONUS FUNCTIONS =============
+    
+    populateJohnnyBonus() {
+        // Get current year for date calculation
+        const currentYear = new Date().getFullYear();
+        const startDate = new Date(currentYear, 10, 24); // November 24 (month is 0-indexed)
+        const endDate = new Date(currentYear, 11, 24); // December 24
+        
+        // If we're past December 24, use previous year's dates
+        const now = new Date();
+        if (now > endDate) {
+            // Use previous year
+            const prevYear = currentYear - 1;
+            startDate.setFullYear(prevYear);
+            endDate.setFullYear(prevYear);
+        }
+        
+        if (!this.soldData || this.soldData.length === 0) {
+            // No data available
+            this.updateJohnnyBonusDisplay(0, 0, 0);
+            return;
+        }
+        
+        // Filter sales from Nov 24 - Dec 24
+        // All items in soldData are assumed to be paid and shipped (from eBay Sold Items Report)
+        let totalSales = 0;
+        let itemsSold = 0;
+        
+        this.soldData.forEach(sale => {
+            const saleDateStr = sale['Sale Date'] || sale['Sold Date'] || '';
+            if (!saleDateStr) return;
+            
+            const saleDate = this.parseSoldDate(saleDateStr);
+            if (!saleDate) return;
+            
+            // Check if sale is within the date range
+            if (saleDate >= startDate && saleDate <= endDate) {
+                const soldPrice = parseFloat((sale['Sold Price'] || sale['Sold For'] || '0').toString().replace(/[$,]/g, '')) || 0;
+                const quantity = parseInt(sale['Quantity'] || '1') || 1;
+                
+                totalSales += soldPrice * quantity;
+                itemsSold += quantity;
+            }
+        });
+        
+        // Calculate 1% bonus
+        const bonus = totalSales * 0.01;
+        
+        // Update display
+        this.updateJohnnyBonusDisplay(bonus, totalSales, itemsSold);
+    }
+    
+    updateJohnnyBonusDisplay(bonus, totalSales, itemsSold) {
+        // Update bonus amount
+        const bonusAmountEl = document.getElementById('johnnyBonusAmount');
+        if (bonusAmountEl) {
+            bonusAmountEl.textContent = `$${bonus.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+        
+        // Update total sales
+        const totalSalesEl = document.getElementById('johnnyTotalSales');
+        if (totalSalesEl) {
+            totalSalesEl.textContent = `$${totalSales.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+        
+        // Update items sold
+        const itemsSoldEl = document.getElementById('johnnyItemsSold');
+        if (itemsSoldEl) {
+            itemsSoldEl.textContent = itemsSold.toLocaleString();
+        }
     }
 
     // ============= IMAGE OPTIMIZER METHODS =============

@@ -25,3 +25,5 @@ Thumbs.db
 
 # Documentation (optional - include if you want docs on your site)
 # *.md
+sports-card-deal-finder/.env*
+sports-card-deal-finder/switch_to_production.sh

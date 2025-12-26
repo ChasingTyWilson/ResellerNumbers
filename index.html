@@ -6,10 +6,10 @@
     <title>Reseller Numbers - Professional Analytics Platform</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Supabase Client Library -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
-    <script src="supabase-service.js"></script>
+    <!-- Supabase Client Library (commented out - using localStorage only) -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> -->
+    <!-- <script src="supabase-config.js"></script> -->
+    <!-- <script src="supabase-service.js"></script> -->
 </head>
 <body>
     <div class="container">
@@ -30,117 +30,50 @@
         </header>
 
         <main>
-            <!-- Authentication Screen -->
+            <!-- Email Entry Screen -->
             <div class="auth-screen" id="authScreen">
                 <div class="auth-container">
                     <div class="auth-logo">
-                        <h1>📊 eBay Analytics Pro</h1>
+                        <h1>📊 Reseller Numbers</h1>
                         <p>Professional business intelligence for serious sellers</p>
                     </div>
 
-                    <!-- Login Form -->
-                    <div class="auth-form-wrapper" id="loginForm">
-                        <h2>Welcome Back</h2>
-                        <p class="auth-subtitle">Sign in to access your analytics dashboard</p>
+                    <!-- Email Entry Form -->
+                    <div class="auth-form-wrapper">
+                        <h2>Get Started</h2>
+                        <p class="auth-subtitle">Enter your email address to start using Reseller Numbers</p>
+                        <p class="auth-note">Your data will be stored locally in your browser</p>
                         
-                        <form id="loginFormElement" class="auth-form">
+                        <form id="emailForm" class="auth-form">
                             <div class="form-group">
-                                <label for="loginEmail">Email Address</label>
-                                <input type="email" id="loginEmail" placeholder="you@example.com" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="loginPassword">Password</label>
-                                <input type="password" id="loginPassword" placeholder="••••••••" required>
-                            </div>
-
-                            <div class="form-options">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="rememberMe">
-                                    <span>Remember me</span>
-                                </label>
-                                <a href="#" class="forgot-password">Forgot password?</a>
+                                <label for="userEmail">Email Address</label>
+                                <input type="email" id="userEmail" placeholder="you@example.com" required>
+                                <small>We'll use this to identify your data locally</small>
                             </div>
 
                             <button type="submit" class="btn btn-primary btn-large btn-full">
-                                Sign In
-                            </button>
-
-                            <div class="auth-divider">
-                                <span>or</span>
-                            </div>
-
-                            <button type="button" class="btn btn-secondary btn-full" id="showSignupBtn">
-                                Create New Account
+                                Start Using Reseller Numbers
                             </button>
                         </form>
-                    </div>
 
-                    <!-- Signup Form -->
-                    <div class="auth-form-wrapper" id="signupForm" style="display: none;">
-                        <h2>Create Account</h2>
-                        <p class="auth-subtitle">Start your 14-day free trial - no credit card required</p>
-                        
-                        <form id="signupFormElement" class="auth-form">
-                            <div class="form-group">
-                                <label for="signupName">Full Name</label>
-                                <input type="text" id="signupName" placeholder="John Doe" required>
+                        <!-- Features List -->
+                        <div class="auth-features" style="margin-top: 2rem;">
+                            <div class="feature-item">
+                                <span class="feature-icon">✓</span>
+                                <span>Real-time inventory analytics</span>
                             </div>
-
-                            <div class="form-group">
-                                <label for="signupEmail">Email Address</label>
-                                <input type="email" id="signupEmail" placeholder="you@example.com" required>
+                            <div class="feature-item">
+                                <span class="feature-icon">✓</span>
+                                <span>Sales performance tracking</span>
                             </div>
-
-                            <div class="form-group">
-                                <label for="signupPassword">Password</label>
-                                <input type="password" id="signupPassword" placeholder="••••••••" required minlength="8">
-                                <small>At least 8 characters</small>
+                            <div class="feature-item">
+                                <span class="feature-icon">✓</span>
+                                <span>Collection profitability insights</span>
                             </div>
-
-                            <div class="form-group">
-                                <label for="signupPasswordConfirm">Confirm Password</label>
-                                <input type="password" id="signupPasswordConfirm" placeholder="••••••••" required>
+                            <div class="feature-item">
+                                <span class="feature-icon">✓</span>
+                                <span>All data stored locally in your browser</span>
                             </div>
-
-                            <div class="form-options">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="agreeTerms" required>
-                                    <span>I agree to the <a href="#" class="terms-link">Terms of Service</a> and <a href="#" class="terms-link">Privacy Policy</a></span>
-                                </label>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary btn-large btn-full">
-                                Create Account
-                            </button>
-
-                            <div class="auth-divider">
-                                <span>or</span>
-                            </div>
-
-                            <button type="button" class="btn btn-secondary btn-full" id="showLoginBtn">
-                                Already have an account? Sign In
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Features List -->
-                    <div class="auth-features">
-                        <div class="feature-item">
-                            <span class="feature-icon">✓</span>
-                            <span>Real-time inventory analytics</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="feature-icon">✓</span>
-                            <span>Sales performance tracking</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="feature-icon">✓</span>
-                            <span>Collection profitability insights</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="feature-icon">✓</span>
-                            <span>Secure cloud data storage</span>
                         </div>
                     </div>
                 </div>
@@ -806,6 +739,7 @@
                     <button class="exec-tab-btn active" data-tab="overview">Overview</button>
                     <button class="exec-tab-btn" data-tab="annual-review">Monthly Breakdowns</button>
                     <button class="exec-tab-btn" data-tab="secret-analysis">🔍 Advanced Analytics</button>
+                    <button class="exec-tab-btn" data-tab="johnny-bonus">🎄 JOHNNY CHRISTMAS BONUS</button>
                 </div>
 
                 <!-- Overview Tab Content -->
@@ -1523,6 +1457,55 @@
                     </div>
                 </div>
                 <!-- End Secret Analysis Tab -->
+
+                <!-- Johnny Christmas Bonus Tab -->
+                <div class="exec-tab-content" id="johnny-bonus-tab">
+                    <div class="johnny-bonus-container">
+                        <div class="bonus-header">
+                            <h2>🎄 JOHNNY CHRISTMAS BONUS 🎄</h2>
+                            <p class="bonus-subtitle">Holiday Sales Performance Bonus Tracker</p>
+                            <p class="bonus-period">November 24th - December 24th</p>
+                        </div>
+
+                        <div class="bonus-display-section">
+                            <div class="bonus-main-card">
+                                <div class="bonus-icon-large">💰</div>
+                                <div class="bonus-label">Your Christmas Bonus</div>
+                                <div class="bonus-amount" id="johnnyBonusAmount">$0.00</div>
+                                <div class="bonus-description">1% of Total Paid & Shipped Sales</div>
+                            </div>
+
+                            <div class="bonus-stats-grid">
+                                <div class="bonus-stat-card">
+                                    <div class="stat-icon">📦</div>
+                                    <div class="stat-label">Total Sales</div>
+                                    <div class="stat-value" id="johnnyTotalSales">$0.00</div>
+                                    <div class="stat-subtext">Nov 24 - Dec 24</div>
+                                </div>
+                                <div class="bonus-stat-card">
+                                    <div class="stat-icon">🎯</div>
+                                    <div class="stat-label">Items Sold</div>
+                                    <div class="stat-value" id="johnnyItemsSold">0</div>
+                                    <div class="stat-subtext">Paid & Shipped</div>
+                                </div>
+                                <div class="bonus-stat-card">
+                                    <div class="stat-icon">📈</div>
+                                    <div class="stat-label">Bonus Rate</div>
+                                    <div class="stat-value">1%</div>
+                                    <div class="stat-subtext">Of Total Sales</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bonus-motivation-section">
+                            <div class="motivation-card">
+                                <h3>🎯 Keep Going!</h3>
+                                <p>Every sale counts toward your Christmas bonus. Keep pushing through the holiday season!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End Johnny Christmas Bonus Tab -->
             </div>
 
             <!-- Inventory Analytics Dashboard -->
