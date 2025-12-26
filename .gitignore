@@ -3,6 +3,7 @@ node_modules/
 .env
 .env.local
 .env.production
+.env.*.local
 
 # Python files (not needed for web deployment)
 card_cropper.py

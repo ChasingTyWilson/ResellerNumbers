@@ -63,17 +63,25 @@ class ResellerNumbersAnalytics {
         
         if (userEmail) {
             console.log('✅ User email found:', userEmail);
+            // Hide auth screen immediately
+            if (this.authScreen) {
+                this.authScreen.style.display = 'none';
+            }
             // Load user data and show app
             this.loadUserData();
-            this.showApp();
-        } else {
+                this.showApp();
+            } else {
             console.log('❌ No email found, showing email entry screen');
-            // Auth screen is already visible by default
+            // Ensure auth screen is visible
+            if (this.authScreen) {
+                this.authScreen.style.display = 'flex';
+            }
         }
     }
 
     async handleEmailSubmit() {
-        const email = document.getElementById('userEmail').value;
+        const emailInput = document.getElementById('userEmail');
+        const email = emailInput.value.trim();
 
         if (!email) {
             alert('❌ Please enter a valid email address.');
@@ -87,11 +95,12 @@ class ResellerNumbersAnalytics {
             return;
         }
 
-        // Store email in localStorage
+        // Store email in localStorage (persists across sessions)
         localStorage.setItem('userEmail', email);
         
         // Create or update user data
         let userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        const isNewUser = !userData.createdAt; // Check if this is a first-time user
         userData.email = email;
         if (!userData.createdAt) {
             userData.createdAt = new Date().toISOString();
@@ -101,13 +110,50 @@ class ResellerNumbersAnalytics {
         }
         localStorage.setItem('userData', JSON.stringify(userData));
 
-        console.log('✅ Email saved:', email);
+        console.log('✅ Email saved to localStorage:', email);
+        
+        // Add to ConvertKit email list (only for new users, and don't block if it fails)
+        if (isNewUser) {
+            this.addToConvertKit(email).catch(err => {
+                console.warn('Failed to add email to ConvertKit (non-blocking):', err);
+            });
+        }
+        
+        // Hide auth screen
+        if (this.authScreen) {
+            this.authScreen.style.display = 'none';
+        }
         
         // Load any existing user data and show app
         this.loadUserData();
-            this.showApp();
+        this.showApp();
     }
 
+    async addToConvertKit(email) {
+        try {
+            const response = await fetch('/api/convertkit/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email }),
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('✅ Email added to ConvertKit:', email);
+            } else {
+                console.warn('⚠️ ConvertKit subscription may have failed:', result);
+            }
+            
+            return result;
+        } catch (error) {
+            console.error('❌ Error adding email to ConvertKit:', error);
+            // Don't throw - this is non-blocking
+            return { success: false, error: error.message };
+        }
+    }
 
     loadUserData() {
         console.log('📥 Loading user data from localStorage...');
