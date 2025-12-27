@@ -100,7 +100,10 @@ class ResellerNumbersAnalytics {
         
         // Create or update user data
         let userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        const previousEmail = userData.email;
         const isNewUser = !userData.createdAt; // Check if this is a first-time user
+        const alreadyAddedToConvertKit = userData.addedToConvertKit === true;
+        
         userData.email = email;
         if (!userData.createdAt) {
             userData.createdAt = new Date().toISOString();
@@ -111,15 +114,30 @@ class ResellerNumbersAnalytics {
         localStorage.setItem('userData', JSON.stringify(userData));
 
         console.log('✅ Email saved to localStorage:', email);
+        console.log('📊 User status:', {
+            isNewUser,
+            previousEmail,
+            alreadyAddedToConvertKit,
+            currentEmail: email
+        });
         
-        // Add to ConvertKit email list (only for new users, and don't block if it fails)
-        if (isNewUser) {
+        // Add to ConvertKit email list (only if new user AND not already added)
+        if (isNewUser && !alreadyAddedToConvertKit) {
             console.log('🆕 New user detected, adding to ConvertKit...');
-            this.addToConvertKit(email).catch(err => {
+            this.addToConvertKit(email).then(result => {
+                if (result.success) {
+                    // Mark as added to ConvertKit
+                    userData.addedToConvertKit = true;
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                    console.log('✅ Marked as added to ConvertKit in localStorage');
+                }
+            }).catch(err => {
                 console.warn('Failed to add email to ConvertKit (non-blocking):', err);
             });
+        } else if (alreadyAddedToConvertKit) {
+            console.log('👤 User already added to ConvertKit, skipping');
         } else {
-            console.log('👤 Existing user, skipping ConvertKit (already subscribed)');
+            console.log('👤 Existing user (not new), skipping ConvertKit');
         }
         
         // Hide auth screen
