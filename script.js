@@ -114,9 +114,12 @@ class ResellerNumbersAnalytics {
         
         // Add to ConvertKit email list (only for new users, and don't block if it fails)
         if (isNewUser) {
+            console.log('🆕 New user detected, adding to ConvertKit...');
             this.addToConvertKit(email).catch(err => {
                 console.warn('Failed to add email to ConvertKit (non-blocking):', err);
             });
+        } else {
+            console.log('👤 Existing user, skipping ConvertKit (already subscribed)');
         }
         
         // Hide auth screen
@@ -130,8 +133,12 @@ class ResellerNumbersAnalytics {
     }
 
     async addToConvertKit(email) {
+        console.log('📧 Attempting to add email to ConvertKit:', email);
         try {
-            const response = await fetch('/api/convertkit/subscribe', {
+            const apiUrl = '/api/convertkit/subscribe';
+            console.log('🌐 Calling API:', apiUrl);
+            
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -139,10 +146,19 @@ class ResellerNumbersAnalytics {
                 body: JSON.stringify({ email: email }),
             });
 
+            console.log('📡 API Response status:', response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ API Error Response:', errorText);
+                throw new Error(`API returned ${response.status}: ${errorText}`);
+            }
+
             const result = await response.json();
+            console.log('📦 API Response data:', result);
             
             if (result.success) {
-                console.log('✅ Email added to ConvertKit:', email);
+                console.log('✅ Email successfully added to ConvertKit:', email);
             } else {
                 console.warn('⚠️ ConvertKit subscription may have failed:', result);
             }
@@ -150,6 +166,10 @@ class ResellerNumbersAnalytics {
             return result;
         } catch (error) {
             console.error('❌ Error adding email to ConvertKit:', error);
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack
+            });
             // Don't throw - this is non-blocking
             return { success: false, error: error.message };
         }
