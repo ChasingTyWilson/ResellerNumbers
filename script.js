@@ -121,26 +121,7 @@ class ResellerNumbersAnalytics {
             currentEmail: email
         });
         
-        // Add to ConvertKit email list (only if new user AND not already added)
-        if (isNewUser && !alreadyAddedToConvertKit) {
-            console.log('🆕 New user detected, adding to ConvertKit...');
-            this.addToConvertKit(email).then(result => {
-                if (result.success) {
-                    // Mark as added to ConvertKit
-                    userData.addedToConvertKit = true;
-                    localStorage.setItem('userData', JSON.stringify(userData));
-                    console.log('✅ Marked as added to ConvertKit in localStorage');
-                }
-            }).catch(err => {
-                console.warn('Failed to add email to ConvertKit (non-blocking):', err);
-            });
-        } else if (alreadyAddedToConvertKit) {
-            console.log('👤 User already added to ConvertKit, skipping');
-        } else {
-            console.log('👤 Existing user (not new), skipping ConvertKit');
-        }
-        
-        // Hide auth screen
+        // Hide auth screen first (don't wait for ConvertKit)
         if (this.authScreen) {
             this.authScreen.style.display = 'none';
         }
@@ -148,6 +129,29 @@ class ResellerNumbersAnalytics {
         // Load any existing user data and show app
         this.loadUserData();
         this.showApp();
+        
+        // Add to ConvertKit email list (only if new user AND not already added)
+        // Do this AFTER showing the app so it doesn't block the UI
+        if (isNewUser && !alreadyAddedToConvertKit) {
+            console.log('🆕 New user detected, adding to ConvertKit...');
+            // Use setTimeout to ensure it runs after page render
+            setTimeout(() => {
+                this.addToConvertKit(email).then(result => {
+                    if (result && result.success) {
+                        // Mark as added to ConvertKit
+                        userData.addedToConvertKit = true;
+                        localStorage.setItem('userData', JSON.stringify(userData));
+                        console.log('✅ Marked as added to ConvertKit in localStorage');
+                    }
+                }).catch(err => {
+                    console.warn('Failed to add email to ConvertKit (non-blocking):', err);
+                });
+            }, 100);
+        } else if (alreadyAddedToConvertKit) {
+            console.log('👤 User already added to ConvertKit, skipping');
+        } else {
+            console.log('👤 Existing user (not new), skipping ConvertKit');
+        }
     }
 
     async addToConvertKit(email) {
