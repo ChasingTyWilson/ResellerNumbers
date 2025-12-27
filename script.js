@@ -155,24 +155,42 @@ class ResellerNumbersAnalytics {
         try {
             const apiUrl = '/api/convertkit/subscribe';
             console.log('🌐 Calling API:', apiUrl);
+            console.log('📤 Request payload:', { email: email });
             
-            const response = await fetch(apiUrl, {
+            const fetchPromise = fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ email: email }),
             });
-
-            console.log('📡 API Response status:', response.status);
             
+            console.log('⏳ Waiting for API response...');
+            const response = await fetchPromise;
+            console.log('📡 API Response received! Status:', response.status, response.statusText);
+
+            // Check if response is ok
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('❌ API Error Response:', errorText);
+                console.error('❌ API Error Response:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    body: errorText
+                });
                 throw new Error(`API returned ${response.status}: ${errorText}`);
             }
 
-            const result = await response.json();
+            // Try to parse JSON response
+            let result;
+            try {
+                const responseText = await response.text();
+                console.log('📄 Raw response text:', responseText);
+                result = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('❌ Failed to parse JSON response:', parseError);
+                throw new Error('Invalid JSON response from API');
+            }
+            
             console.log('📦 API Response data:', result);
             
             if (result.success) {
@@ -185,6 +203,7 @@ class ResellerNumbersAnalytics {
         } catch (error) {
             console.error('❌ Error adding email to ConvertKit:', error);
             console.error('Error details:', {
+                name: error.name,
                 message: error.message,
                 stack: error.stack
             });
