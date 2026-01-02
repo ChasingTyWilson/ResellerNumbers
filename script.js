@@ -24,6 +24,9 @@ class ResellerNumbersAnalytics {
         this.platformSelectorsSetup = false; // Flag for platform selector listeners
         this.imageOptimizerInitialized = false; // Flag for Image Optimizer
         
+        // Year filter for charts
+        this.selectedYearFilter = 'all'; // 'all', '2025', 'last-year'
+        
         this.loadStoredData();
         this.initializeElements();
         this.setupEventListeners();
@@ -130,87 +133,61 @@ class ResellerNumbersAnalytics {
         this.loadUserData();
         this.showApp();
         
-        // Add to ConvertKit email list (only if new user AND not already added)
+        // Add to Google Sheets email list (only if new user AND not already added)
         // Do this AFTER showing the app so it doesn't block the UI
         if (isNewUser && !alreadyAddedToConvertKit) {
-            console.log('🆕 New user detected, adding to ConvertKit...');
+            console.log('🆕 New user detected, adding to Google Sheet...');
             // Use setTimeout to ensure it runs after page render
             setTimeout(() => {
-                this.addToConvertKit(email).then(result => {
+                this.addToGoogleSheets(email).then(result => {
                     if (result && result.success) {
-                        // Mark as added to ConvertKit
-                        userData.addedToConvertKit = true;
+                        // Mark as added to Google Sheets
+                        userData.addedToConvertKit = true; // Reusing same flag name
                         localStorage.setItem('userData', JSON.stringify(userData));
-                        console.log('✅ Marked as added to ConvertKit in localStorage');
+                        console.log('✅ Marked as added to Google Sheet in localStorage');
                     }
                 }).catch(err => {
-                    console.warn('Failed to add email to ConvertKit (non-blocking):', err);
+                    console.warn('Failed to add email to Google Sheet (non-blocking):', err);
                 });
             }, 100);
         } else if (alreadyAddedToConvertKit) {
-            console.log('👤 User already added to ConvertKit, skipping');
+            console.log('👤 User already added to Google Sheet, skipping');
         } else {
-            console.log('👤 Existing user (not new), skipping ConvertKit');
+            console.log('👤 Existing user (not new), skipping Google Sheet');
         }
     }
 
-    async addToConvertKit(email) {
-        console.log('📧 Attempting to add email to ConvertKit:', email);
+    async addToGoogleSheets(email) {
+        console.log('📧 Attempting to add email to Google Sheet:', email);
         try {
-            const apiUrl = '/api/convertkit/subscribe';
+            const apiUrl = '/api/googlesheets/subscribe';
             console.log('🌐 Calling API:', apiUrl);
-            console.log('📤 Request payload:', { email: email });
             
-            const fetchPromise = fetch(apiUrl, {
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ email: email }),
             });
-            
-            console.log('⏳ Waiting for API response...');
-            const response = await fetchPromise;
-            console.log('📡 API Response received! Status:', response.status, response.statusText);
 
-            // Check if response is ok
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('❌ API Error Response:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    body: errorText
-                });
+                console.error('❌ API Error Response:', errorText);
                 throw new Error(`API returned ${response.status}: ${errorText}`);
             }
 
-            // Try to parse JSON response
-            let result;
-            try {
-                const responseText = await response.text();
-                console.log('📄 Raw response text:', responseText);
-                result = JSON.parse(responseText);
-            } catch (parseError) {
-                console.error('❌ Failed to parse JSON response:', parseError);
-                throw new Error('Invalid JSON response from API');
-            }
-            
-            console.log('📦 API Response data:', result);
+            const result = await response.json();
             
             if (result.success) {
-                console.log('✅ Email successfully added to ConvertKit:', email);
+                console.log('✅ Email successfully added to Google Sheet:', email);
             } else {
-                console.warn('⚠️ ConvertKit subscription may have failed:', result);
+                console.warn('⚠️ Google Sheets submission may have failed:', result);
             }
             
             return result;
         } catch (error) {
-            console.error('❌ Error adding email to ConvertKit:', error);
-            console.error('Error details:', {
-                name: error.name,
-                message: error.message,
-                stack: error.stack
-            });
+            console.error('❌ Error adding email to Google Sheet:', error);
             // Don't throw - this is non-blocking
             return { success: false, error: error.message };
         }
@@ -586,6 +563,9 @@ class ResellerNumbersAnalytics {
         this.sellThroughChart = document.getElementById('sellThroughChart');
         this.salesChart = document.getElementById('salesChart');
         this.topItemsChart = document.getElementById('topItemsChart');
+        
+        // Year filter
+        this.yearFilter = document.getElementById('yearFilter');
 
         // Analysis elements
         this.longestListedItems = document.getElementById('longestListedItems');
@@ -926,6 +906,16 @@ class ResellerNumbersAnalytics {
         }
         if (this.sortBySKU) {
             this.sortBySKU.addEventListener('click', () => this.sortSalesTable('sku'));
+        }
+
+        // Year filter event
+        if (this.yearFilter) {
+            this.yearFilter.addEventListener('change', (e) => {
+                this.selectedYearFilter = e.target.value;
+                console.log('Year filter changed to:', this.selectedYearFilter);
+                // Refresh charts with filtered data
+                this.refreshChartsWithYearFilter();
+            });
         }
 
         // Tab events
@@ -1701,6 +1691,10 @@ class ResellerNumbersAnalytics {
     }
 
     updateSalesDashboard() {
+        // Re-analyze with current year filter
+        if (this.soldData && this.soldData.length > 0) {
+            this.soldAnalysisResults = this.analyzeSoldData();
+        }
         this.updateSoldSummaryCards();
         this.updateProfitabilityMetrics();
         this.createDailySalesChart();
@@ -2373,6 +2367,20 @@ class ResellerNumbersAnalytics {
             const originalData = this.soldData;
             this.soldData = dataToAnalyze;
             
+            // Apply year filter if active
+            let filteredData = this.soldData;
+            if (this.selectedYearFilter === '2025' || this.selectedYearFilter === 'last-year') {
+                filteredData = this.getFilteredSoldData();
+                console.log('Applied year filter (2025), filtered to', filteredData.length, 'items');
+            } else if (this.selectedYearFilter === 'all') {
+                // Use all data
+                filteredData = this.soldData;
+            }
+            
+            // Temporarily set filtered data for calculations
+            const originalSoldData = this.soldData;
+            this.soldData = filteredData;
+            
             const results = {
                 totalSales: this.soldData.length,
                 totalRevenue: this.calculateTotalRevenue(),
@@ -2385,7 +2393,7 @@ class ResellerNumbersAnalytics {
             };
             
             // Restore original data
-            this.soldData = originalData;
+            this.soldData = originalSoldData;
             
             console.log('Sold analysis results:', results);
             return results;
@@ -3101,7 +3109,9 @@ class ResellerNumbersAnalytics {
     }
     
     updateProfitabilityMetrics() {
-        if (!this.soldData || this.soldData.length === 0 || this.collections.length === 0) {
+        // Use filtered data for profitability calculations
+        const filteredSoldData = this.getFilteredSoldData();
+        if (!filteredSoldData || filteredSoldData.length === 0 || this.collections.length === 0) {
             // No data or no collections with purchase info
             if (this.totalCollectionProfits) this.totalCollectionProfits.textContent = '$0';
             if (this.avgDaysToBreakEven) this.avgDaysToBreakEven.textContent = '0';
@@ -3118,8 +3128,8 @@ class ResellerNumbersAnalytics {
         const collectionMetrics = [];
         
         this.collections.forEach(purchaseData => {
-            // Find all sales for this collection SKU
-            const collectionSales = this.soldData.filter(sale => {
+            // Find all sales for this collection SKU (using filtered data)
+            const collectionSales = filteredSoldData.filter(sale => {
                 const saleSKU = sale['Custom Label (SKU)'] || sale['Custom Label'] || '';
                 return saleSKU.toLowerCase() === purchaseData.sku.toLowerCase() ||
                        saleSKU.toLowerCase() === purchaseData.name.toLowerCase();
@@ -3239,15 +3249,57 @@ class ResellerNumbersAnalytics {
         }
     }
 
-    createDailySalesChart() {
-        if (!this.soldData || this.soldData.length === 0) return;
+    getFilteredSoldData() {
+        // Get sold data filtered by selected year
+        if (!this.soldData || this.soldData.length === 0) return [];
         
-        console.log('Creating Daily Sales Chart with', this.soldData.length, 'items');
+        if (this.selectedYearFilter === 'all') {
+            return this.soldData;
+        }
+        
+        const currentYear = new Date().getFullYear();
+        let targetYear;
+        
+        if (this.selectedYearFilter === '2025') {
+            targetYear = 2025;
+        } else if (this.selectedYearFilter === 'last-year') {
+            targetYear = currentYear - 1; // Last year (2025)
+        } else {
+            return this.soldData;
+        }
+        
+        // Filter out 2026 data and only show target year
+        return this.soldData.filter(item => {
+            const soldDateStr = item['Sale Date'] || item['Sold Date'] || item['Order Date'];
+            if (!soldDateStr) return false;
+            
+            const date = this.parseSoldDate(soldDateStr);
+            if (!date) return false;
+            
+            const itemYear = date.getFullYear();
+            // Only include items from target year, exclude 2026
+            return itemYear === targetYear && itemYear !== 2026;
+        });
+    }
+
+    createDailySalesChart() {
+        const filteredData = this.getFilteredSoldData();
+        if (!filteredData || filteredData.length === 0) {
+            // Clear chart if no data
+            const ctx = document.getElementById('dailySalesChart')?.getContext('2d');
+            if (ctx && this.soldCharts.dailySales) {
+                this.soldCharts.dailySales.destroy();
+                this.soldCharts.dailySales = null;
+            }
+            return;
+        }
+        
+        console.log('Creating Daily Sales Chart with', filteredData.length, 'items (filtered)');
         
         // Group sales by date and calculate daily revenue
         const dailyRevenue = {};
         
-        this.soldData.forEach(item => {
+        filteredData.forEach(item => {
             const soldDateStr = item['Sale Date'] || item['Sold Date'] || item['Order Date'];
             if (!soldDateStr) return;
             
@@ -3361,6 +3413,30 @@ class ResellerNumbersAnalytics {
         });
     }
 
+    refreshChartsWithYearFilter() {
+        // Refresh all charts when year filter changes
+        console.log('Refreshing charts with year filter:', this.selectedYearFilter);
+        
+        // Re-analyze sold data with filter
+        if (this.soldData && this.soldData.length > 0) {
+            this.analyzeSoldData();
+        }
+        
+        // Refresh charts
+        if (this.soldCharts.dailySales) {
+            this.createDailySalesChart();
+        }
+        if (this.soldCharts.sales) {
+            this.createSalesChart();
+        }
+        if (this.soldCharts.topItems) {
+            this.createTopItemsChart();
+        }
+        
+        // Refresh monthly data display
+        this.renderMonthlyData();
+    }
+
     createSalesChart() {
         const ctx = this.salesChart.getContext('2d');
         
@@ -3368,7 +3444,31 @@ class ResellerNumbersAnalytics {
             this.soldCharts.sales.destroy();
         }
 
-        const salesByMonth = this.soldAnalysisResults.salesByMonth;
+        // Filter salesByMonth based on year filter
+        let salesByMonth = this.soldAnalysisResults.salesByMonth || {};
+        if (this.selectedYearFilter === '2025' || this.selectedYearFilter === 'last-year') {
+            // Filter to only show 2025 months, exclude 2026
+            const filtered = {};
+            Object.keys(salesByMonth).forEach(monthKey => {
+                if (monthKey.startsWith('2025-')) {
+                    filtered[monthKey] = salesByMonth[monthKey];
+                }
+            });
+            salesByMonth = filtered;
+        } else if (this.selectedYearFilter === 'all') {
+            // Show all months
+        } else {
+            // Default: show current year
+            const currentYear = new Date().getFullYear();
+            const filtered = {};
+            Object.keys(salesByMonth).forEach(monthKey => {
+                if (monthKey.startsWith(`${currentYear}-`)) {
+                    filtered[monthKey] = salesByMonth[monthKey];
+                }
+            });
+            salesByMonth = filtered;
+        }
+
         const months = Object.keys(salesByMonth);
         const revenues = months.map(month => salesByMonth[month].revenue);
 
@@ -5468,9 +5568,18 @@ ${data.recommendations.listingOptimizations.map(rec =>
             return;
         }
         
-        // Filter to only show current calendar year
-        const currentYear = new Date().getFullYear();
-        const currentYearMonths = this.monthlyData.filter(m => m.year === currentYear);
+        // Filter based on selected year filter
+        let filteredMonths;
+        if (this.selectedYearFilter === '2025' || this.selectedYearFilter === 'last-year') {
+            // Show only 2025 data, exclude 2026
+            filteredMonths = this.monthlyData.filter(m => m.year === 2025);
+        } else {
+            // Show all years (or current year for default behavior)
+            const currentYear = new Date().getFullYear();
+            filteredMonths = this.monthlyData.filter(m => m.year === currentYear);
+        }
+        
+        const currentYearMonths = filteredMonths;
         
         if (currentYearMonths.length === 0) {
             this.monthsGrid.innerHTML = '<p style="text-align: center; color: #6b7280;">No data for current year</p>';

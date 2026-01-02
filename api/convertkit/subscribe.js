@@ -41,11 +41,8 @@ export default async function handler(req, res) {
                 body: JSON.stringify({
                     api_secret: CONVERTKIT_API_SECRET,
                     email: email,
-                    // Optional: Add tags or custom fields
-                    // tags: ['reseller-numbers'],
-                    // fields: {
-                    //     source: 'website-signup'
-                    // }
+                    // Force active state - bypass double opt-in when using api_secret
+                    // This should add subscribers as active immediately
                 }),
             }
         );
